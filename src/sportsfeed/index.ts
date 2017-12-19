@@ -64,23 +64,20 @@ export async function getTeams(
 export async function getPlayersForTeam(
   nameOrAbbrev: string,
   credentials: ISportsFeedCreds
-): Promise<ISportsFeedPlayers[] | boolean> {
+): Promise<ISportsFeedPlayers[]> {
   try {
     if (!validateTeam(nameOrAbbrev)) {
-      return false;
+      return [];
     }
 
     const teamURL = createTeamURL(nameOrAbbrev);
     const { rosterplayers: { playerentry: results = [] } } = (await get(
       teamURL,
-      credentials
+      buildAuthHeader(credentials)
     )) as any;
-    if (results.length) {
-      return results.map((x: { player: any }) => ({ ...x.player }));
-    }
-    return false;
+    return results.map((x: { player: any }) => ({ ...x.player }));
   } catch (error) {
-    return false;
+    return [];
   }
 }
 

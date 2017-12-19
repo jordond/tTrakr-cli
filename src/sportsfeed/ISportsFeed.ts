@@ -26,5 +26,5 @@ export interface ISportsFeedTeam {
     jersey: string | null;
     logo: string | null;
   };
-  players?: ISportsFeedPlayers;
+  players?: ISportsFeedPlayers[];
 }
