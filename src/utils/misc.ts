@@ -59,10 +59,18 @@ export function createDynamicObject(key: any, value: any): any {
   return obj;
 }
 
+export function getFileSizeOfObject(obj: object): string {
+  return getFileSizeOfString(JSON.stringify(obj, null, 2));
+}
+
 export function getFileSizeOfString(str: string): string {
   return filesize(binarySize(str));
 }
 
 export function binarySize(str: string): number {
   return Buffer.byteLength(str, "utf8");
+}
+
+export function shuffle(arr: any[]): any[] {
+  return arr.sort(() => Math.random() - 0.5);
 }

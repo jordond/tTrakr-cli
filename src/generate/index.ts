@@ -6,8 +6,10 @@ declare global {
   export interface ICommandOptions {
     login?: string;
     password?: string;
-    output?: string;
+    out?: string;
     savedCredentials?: boolean;
+    limit?: number;
+    random?: boolean;
   }
 }
 
@@ -19,7 +21,7 @@ const generate: CommandModule = {
   builder: (yargs: Argv) => {
     return yargs
       .options("login", {
-        alias: "l",
+        alias: ["l", "u"],
         type: "string",
         desc: "Login name for mysportsfeeds.com"
       })
@@ -34,10 +36,21 @@ const generate: CommandModule = {
         desc: "Saves the login credentials to the temp folder"
       })
       .options("out", {
-        alias: "o",
+        alias: ["o", "output"],
         type: "string",
         default: "./",
         desc: "Path to save the created JSON file"
+      })
+      .options("limit", {
+        alias: "L",
+        type: "number",
+        desc: "Limit the number of teams to grab"
+      })
+      .options("random", {
+        alias: "r",
+        type: "boolean",
+        desc:
+          "Randomized the limited teams, instead of using the alphabetical order"
       })
       .example(
         "$0 generate --out ./tmp/list.json",
@@ -50,6 +63,10 @@ const generate: CommandModule = {
       .example(
         "$0 generate --no-saved-credentials",
         "Ignore the saved credentials from previous runs"
+      )
+      .example(
+        "$0 generate --limit 5",
+        "Only generate the JSON file for 5 NHL teams.  Add --random for random instead of alphabetical"
       );
   }
 };
