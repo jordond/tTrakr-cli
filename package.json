@@ -1,5 +1,6 @@
 {
   "name": "ttrakr-cli",
+  "configName": "ttrakr",
   "version": "0.0.1",
   "description": "CLI tool for managing backend for tTrakr",
   "typings": "dist/types/index.d.ts",
@@ -30,6 +31,7 @@
   "dependencies": {
     "chalk": "^2.3.0",
     "core-js": "^2.5.1",
+    "cosmiconfig": "^3.1.0",
     "filesize": "^3.5.11",
     "fs-extra": "^5.0.0",
     "inquirer": "^4.0.1",

@@ -3,6 +3,7 @@ import { outputJson } from "fs-extra";
 import { prompt } from "inquirer";
 import { join, resolve } from "path";
 
+import { load } from "../config/config";
 import { exit } from "../index";
 import {
   getPlayersForTeam,
@@ -24,17 +25,25 @@ const log = new Logger(cyan("Generate"));
 export default async function({
   login = "",
   password = "",
-  savedCredentials = true,
   out = "./",
+  noConfig = false,
+  configPath,
   limit = -1,
   random = false
 }: ICommandOptions): Promise<void> {
+  let tryCredentials: ISportsFeedCreds = { login, password };
   try {
+    if (!noConfig) {
+      const { sportsfeed } = await load(configPath);
+      if (sportsfeed) {
+        tryCredentials = { ...sportsfeed };
+      }
+    }
+
     // If either username or password is missing, enable interactive mode
-    const isInteractive: boolean = Boolean(!(login.length && password.length));
-    const credentials: ISportsFeedCreds = isInteractive
-      ? await askForCredentials({ login, password })
-      : { login, password };
+    const credentials: ISportsFeedCreds = isInteractive(tryCredentials)
+      ? await askForCredentials(tryCredentials)
+      : tryCredentials;
 
     // Validate the credentials with the API
     await validateCredentials(credentials);
@@ -83,6 +92,10 @@ export default async function({
   }
 }
 
+function isInteractive({ login = "", password = "" }: ISportsFeedCreds) {
+  return Boolean(!(login.length && password.length));
+}
+
 async function askForCredentials({ login, password }: ISportsFeedCreds) {
   const questions = [];
   log.info(`Enter your login details for ${cyan("http://MySportsFeeds.com")}`);
@@ -126,13 +139,13 @@ async function askForCredentials({ login, password }: ISportsFeedCreds) {
 
 async function validateCredentials(credentials: ISportsFeedCreds) {
   log.debug(
-    `Creds: login -> ${green(credentials.login)}, password -> ${green(
-      "[redacted:" + credentials.password.length + "]"
+    `Creds: login -> ${green(credentials.login as any)}, password -> ${green(
+      "[redacted:" + credentials!.password!.length + "]"
     )}`
   );
 
   log.info(
-    `Attempting to validate ${green(credentials.login)} with ${cyan(
+    `Attempting to validate ${green(credentials.login as any)} with ${cyan(
       "www.mysportsfeed.com"
     )}`
   );

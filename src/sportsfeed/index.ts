@@ -14,8 +14,8 @@ const URL_PLAYERS = `${URL_API_BASE}/2016-2017-regular/roster_players.json?forda
 const TEAM_BLACKLIST: string[] = ["Vegas Golden Knights"];
 
 export interface ISportsFeedCreds {
-  login: string;
-  password: string;
+  login?: string;
+  password?: string;
 }
 
 export function buildAuthHeader({ login, password }: ISportsFeedCreds) {

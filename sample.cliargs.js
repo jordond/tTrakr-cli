@@ -8,8 +8,6 @@
  */
 // prettier-ignore
 module.exports = [
-  "compile",
-  "-s", "tsfl/examples",
+  "generate",
   "-o", "tmp/",
-  "-u"
 ]
