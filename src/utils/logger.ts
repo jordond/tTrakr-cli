@@ -22,7 +22,7 @@ export default class Logger {
   }
 
   public debug(msg: string, data?: any): Logger {
-    return this.out(grey("DEBUG"), grey(msg), grey(data));
+    return this.out(grey("DEBUG"), grey(msg), data);
   }
 
   public w(msg: string, data?: any): Logger {
@@ -30,7 +30,7 @@ export default class Logger {
   }
 
   public warning(msg: string, data?: any): Logger {
-    return this.out(yellow("WARN"), yellow(msg), yellow(data));
+    return this.out(yellow("WARN"), yellow(msg), data);
   }
 
   public e(msg: string, data?: any): Logger {
@@ -38,7 +38,7 @@ export default class Logger {
   }
 
   public error(msg: string, data?: any): Logger {
-    return this.out(bgRed("ERROR"), red(msg), red(data));
+    return this.out(bgRed("ERROR"), red(msg), data);
   }
 
   private out(level: string, msg: string, data?: any): Logger {

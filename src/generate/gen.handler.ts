@@ -2,13 +2,9 @@ import chalk from "chalk";
 import { prompt } from "inquirer";
 
 import Logger from "../utils/logger";
+import { ISportsFeedCreds, validate } from "./sportsfeed";
 
 const log = new Logger(chalk.cyan("Generate"));
-
-export interface ISportsAPICredentials {
-  login: string;
-  password: string;
-}
 
 export default async function({
   login = "",
@@ -18,7 +14,7 @@ export default async function({
 }: ICommandOptions): Promise<void> {
   try {
     const isInteractive: boolean = Boolean(!(login.length && password.length));
-    const credentials = isInteractive
+    const credentials: ISportsFeedCreds = isInteractive
       ? await askForCredentials({ login, password })
       : { login, password };
 
@@ -27,13 +23,20 @@ export default async function({
         credentials.login
       )}, password -> ${chalk.green(credentials.password)}`
     );
+
+    log.info("Validating...");
+    if (await validate(credentials)) {
+      log.info(chalk.green("SUCCESS"));
+    } else {
+      log.error("FAILED TO AUTH");
+    }
   } catch (error) {
     log.error("Failed to generate NHL stats JSON...", error);
     process.exit(1);
   }
 }
 
-async function askForCredentials({ login, password }: ISportsAPICredentials) {
+async function askForCredentials({ login, password }: ISportsFeedCreds) {
   const questions = [];
   log.info("Enter your login details for http://MySportsFeeds.com");
 
@@ -55,7 +58,13 @@ async function askForCredentials({ login, password }: ISportsAPICredentials) {
     questions.push({
       type: "password",
       name: "password",
-      message: "Enter your password:"
+      message: "Enter your password:",
+      validate(input = "") {
+        if (input.length) {
+          return true;
+        }
+        return "Please enter a valid password";
+      }
     });
   }
 
