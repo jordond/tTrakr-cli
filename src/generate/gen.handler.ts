@@ -1,5 +1,5 @@
 import chalk from "chalk";
-import { writeJson } from "fs-extra";
+import { outputJson } from "fs-extra";
 import { prompt } from "inquirer";
 import { join, resolve } from "path";
 
@@ -70,7 +70,7 @@ export default async function({
     const filename = join(out, "teams.json");
     log.info(`📼   saving ${cyan(filename)}`);
 
-    await writeJson(resolve(filename), allTeamsData);
+    await outputJson(resolve(filename), allTeamsData, { spaces: 2 });
     log.info(`🚝  choo choo! File was ${green("successfully")} saved!`);
     log.info(
       `💾  ${chalk.blue(resolve(filename))} => ${green(
@@ -127,7 +127,7 @@ async function askForCredentials({ login, password }: ISportsFeedCreds) {
 async function validateCredentials(credentials: ISportsFeedCreds) {
   log.debug(
     `Creds: login -> ${green(credentials.login)}, password -> ${green(
-      credentials.password
+      "[redacted:" + credentials.password.length + "]"
     )}`
   );
 

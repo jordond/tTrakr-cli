@@ -7,8 +7,8 @@ import { prettyObj, timestamp } from "./misc";
 const { yellow, red, bgRed, blue, grey } = chalk;
 
 const LEVEL_ERROR = "ERROR";
-const LEVEL_WARN = "WARN";
-const LEVEL_INFO = "INFO";
+const LEVEL_WARN = "WARN ";
+const LEVEL_INFO = "INFO ";
 const LEVEL_DEBUG = "DEBUG";
 
 export default class Logger {
