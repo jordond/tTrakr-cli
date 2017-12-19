@@ -1,0 +1,43 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "CLI",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceRoot}/node_modules/ts-node/dist/_bin.js",
+      "args": ["--no-cache", "${workspaceRoot}/tools/debugCLI.ts"],
+      "cwd": "${workspaceRoot}",
+      "protocol": "inspector",
+      "sourceMaps": true
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug Jest",
+      "program": "${workspaceRoot}/node_modules/jest/bin/jest.js",
+      "args": ["--runInBand", "--no-cache"],
+      "cwd": "${workspaceRoot}",
+      "sourceMaps": true,
+      "smartStep": true,
+      "skipFiles": ["<node_internals>/**"]
+    },
+    {
+      "name": "Current TS File",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceRoot}/node_modules/ts-node/dist/_bin.js",
+      "args": ["--no-cache", "${relativeFile}"],
+      "cwd": "${workspaceRoot}",
+      "protocol": "inspector",
+      "sourceMaps": true
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "Attach",
+      "port": 9229,
+      "sourceMaps": true
+    }
+  ]
+}

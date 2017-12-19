@@ -1,0 +1,109 @@
+{
+  "name": "ttrakr-cli",
+  "version": "0.0.1",
+  "description": "CLI tool for managing backend for tTrakr",
+  "typings": "dist/types/index.d.ts",
+  "types": "dist/types/index.d.ts",
+  "bin": {
+    "tkr": "bin/index.js"
+  },
+  "scripts": {
+    "precommit": "lint-staged",
+    "lint": "tslint --project tsconfig.json --fix src/**/*.ts",
+    "test": "cross-env NODE_ENV=test jest",
+    "test:watch": "npm test -- --notify --watch",
+    "coverage": "npm test -- --coverage",
+    "dev": "tsc -w",
+    "cli": "ts-node --no-cache tools/debugCLI",
+    "cli:inspect": "ts-node --no-cache --inspect tools/debugCLI",
+    "prebuild": "rimraf dist",
+    "build": "tsc",
+    "docs": "rimraf './docs' && typedoc --mode modules --externalPattern '**/node_modules/**' --out ./docs ./src"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@bitbucket.org/jordond/tdl_jsfl.git"
+  },
+  "author": "Jordon de Hoog",
+  "license": "ISC",
+  "homepage": "https://bitbucket.org/jordond/tdl_jsfl#readme",
+  "dependencies": {
+    "chalk": "^2.3.0",
+    "core-js": "^2.5.1",
+    "filesize": "^3.5.11",
+    "fs-extra": "^4.0.2",
+    "inquirer": "^4.0.1",
+    "mkdir-promise": "^1.0.0",
+    "node-glob": "^1.2.0",
+    "yargs": "^10.0.3"
+  },
+  "devDependencies": {
+    "@types/filesize": "^3.2.15",
+    "@types/fs-extra": "^4.0.5",
+    "@types/inquirer": "0.0.36",
+    "@types/jest": "^21.1.6",
+    "@types/yargs": "^8.0.2",
+    "cross-env": "^5.1.1",
+    "husky": "^0.14.3",
+    "jest": "^21.2.1",
+    "lint-staged": "^4.3.0",
+    "prettier": "^1.8.2",
+    "replace-ext": "^1.0.0",
+    "rimraf": "^2.6.2",
+    "ts-jest": "^21.2.3",
+    "ts-node": "^3.3.0",
+    "tslint": "^5.8.0",
+    "tslint-config-airbnb": "^5.3.0",
+    "tslint-config-prettier": "^1.6.0",
+    "typedoc": "^0.9.0",
+    "typescript": "^2.6.2"
+  },
+  "lint-staged": {
+    "*.{json}": [
+      "prettier --write",
+      "git add"
+    ],
+    "src/**/*.ts": [
+      "tslint --project tsconfig.json",
+      "prettier --write",
+      "git add"
+    ]
+  },
+  "jest": {
+    "globals": {
+      "ts-jest": {
+        "tsConfigFile": "./tools/tsconfig.jest.json"
+      }
+    },
+    "collectCoverageFrom": [
+      "src/**/*.{ts,tsx}",
+      "!src/**/*.d.ts",
+      "!src/cli.ts"
+    ],
+    "coverageDirectory": "coverage/",
+    "coverageReporters": [
+      "lcov",
+      "html",
+      "text-summary"
+    ],
+    "mapCoverage": true,
+    "moduleFileExtensions": [
+      "js",
+      "ts",
+      "tsx"
+    ],
+    "transform": {
+      "\\.(ts|tsx)$": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+    },
+    "roots": [
+      "<rootDir>/src/",
+      "<rootDir>/test/"
+    ],
+    "testMatch": [
+      "<rootDir>/src/**/?(*.)(spec|test).ts?(x)"
+    ],
+    "transformIgnorePatterns": [
+      "[/\\\\]node_modules[/\\\\].+\\.(js|jsx|ts|tsx)$"
+    ]
+  }
+}
