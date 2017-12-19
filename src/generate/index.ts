@@ -19,7 +19,7 @@ const generate: CommandModule = {
   builder: (yargs: Argv) => {
     return yargs
       .options("login", {
-        alias: "l",
+        alias: ["l", "u"],
         type: "string",
         desc: "Login name for mysportsfeeds.com"
       })

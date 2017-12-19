@@ -1,8 +1,9 @@
 import chalk from "chalk";
 import { prompt } from "inquirer";
 
+import { exit } from "../index";
+import { ISportsFeedCreds, validate } from "../sportsfeed";
 import Logger from "../utils/logger";
-import { ISportsFeedCreds, validate } from "./sportsfeed";
 
 const log = new Logger(chalk.cyan("Generate"));
 
@@ -18,21 +19,11 @@ export default async function({
       ? await askForCredentials({ login, password })
       : { login, password };
 
-    log.info(
-      `Creds: login -> ${chalk.green(
-        credentials.login
-      )}, password -> ${chalk.green(credentials.password)}`
-    );
-
-    log.info("Validating...");
-    if (await validate(credentials)) {
-      log.info(chalk.green("SUCCESS"));
-    } else {
-      log.error("FAILED TO AUTH");
-    }
+    await validateCredentials(credentials);
+    log.info(chalk.green("✔ Successfully validated!"));
   } catch (error) {
-    log.error("Failed to generate NHL stats JSON...", error);
-    process.exit(1);
+    log.error("Failed to generate NHL stats JSON");
+    exit(1);
   }
 }
 
@@ -75,4 +66,28 @@ async function askForCredentials({ login, password }: ISportsFeedCreds) {
     log.e("Failed to gather login information", error);
     throw error;
   }
+}
+
+async function validateCredentials(credentials: ISportsFeedCreds) {
+  log.debug(
+    `Creds: login -> ${chalk.green(
+      credentials.login
+    )}, password -> ${chalk.green(credentials.password)}`
+  );
+
+  log.info(
+    `Attempting to validate ${chalk.green(
+      credentials.login
+    )} with www.mysportsfeed.com`
+  );
+
+  const invalidLogin = !await validate(credentials);
+  if (invalidLogin) {
+    log.e(
+      "✘ Failed to authenticate, ensure your username/password is correct!"
+    );
+    throw new Error("Authentication failed");
+  }
+
+  return true;
 }
