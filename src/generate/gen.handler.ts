@@ -158,15 +158,16 @@ async function buildTeamWithPlayers(
 
   const results: ISportsFeedTeam[] = [];
   for (const [index, value] of teams.entries()) {
-    const pos = () => `[${index + 1}/${teams.length}]`;
+    const pos = () => {
+      const p = index + 1;
+      return `[${p < 10 ? "0" + p : p}/${teams.length}]`;
+    };
     const pretty = () =>
-      `${cyan(value.name)} -> ${magenta(value.abbreviation)}`;
+      `${magenta(value.abbreviation)} -> ${cyan(value.name)}`;
 
     const players = await getPlayersForTeam(value.abbreviation, credentials);
     if (players && players.length) {
-      log.debug(
-        `✔️  ${pos()} found ${green(s(players.length))} for ${pretty()}`
-      );
+      log.debug(`✔️  ${pos()} got ${green(s(players.length))} for ${pretty()}`);
       results.push({ ...value, players });
     } else {
       log.warning(`❌  ${pos()} failed to find players for ${pretty()}`);
