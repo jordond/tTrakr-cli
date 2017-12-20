@@ -74,3 +74,7 @@ export function binarySize(str: string): number {
 export function shuffle(arr: any[]): any[] {
   return arr.sort(() => Math.random() - 0.5);
 }
+
+export function isEmpty(obj: object): boolean {
+  return Boolean(!obj || !Object.keys(obj).length);
+}

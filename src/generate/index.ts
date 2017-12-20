@@ -2,12 +2,14 @@ import { Argv, CommandModule } from "yargs";
 
 import handler from "./gen.handler";
 
+// TODO inject CONFIG stuff into handler
+// ex handler: (argv) => middleware(handler)
+
 declare global {
   export interface ICommandOptions {
     login?: string;
     password?: string;
     out?: string;
-    savedCredentials?: boolean;
     limit?: number;
     random?: boolean;
   }
@@ -29,11 +31,6 @@ const generate: CommandModule = {
         alias: "p",
         type: "string",
         desc: "Password for mysportsfeeds.com"
-      })
-      .options("savedCredentials", {
-        type: "boolean",
-        default: true,
-        desc: "Saves the login credentials to the temp folder"
       })
       .options("out", {
         alias: ["o", "output"],
