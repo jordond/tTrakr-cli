@@ -11,7 +11,7 @@ const createCosmic = cosmiconfig as any; // Typescript hack for no types
 
 const configExplorer = createCosmic(configName);
 
-const FILENAME = `.${configName}rc`;
+export const FILENAME = `.${configName}rc`;
 let cachedConf: ICosmicConfig;
 
 export interface ICosmicConfig {
@@ -29,6 +29,15 @@ export async function getConfigPath(customPath?: string): Promise<string> {
       : cachedConf.filepath || "";
   }
   return customPath;
+}
+
+export async function exists() {
+  try {
+    const { filepath, config = {} }: ICosmicConfig = await load();
+    return Boolean(filepath && !isEmpty(config));
+  } catch (error) {
+    return false;
+  }
 }
 
 // TODO - Custom path for load and save doesn't work as expected
@@ -57,7 +66,10 @@ export async function save(data: IConfig, customPath?: string) {
     const savePath = resolve(await getConfigPath(customPath));
     const existingConfig = (await load(customPath)) || {};
 
-    await outputJson(savePath, { ...existingConfig, ...data }, { spaces: 2 });
+    const mergedConfig = { ...existingConfig.config, ...data };
+    await outputJson(savePath, mergedConfig, { spaces: 2 });
+
+    cachedConf.config = { ...mergedConfig };
 
     return savePath;
   } catch (error) {

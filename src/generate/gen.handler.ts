@@ -107,7 +107,6 @@ export default async function({
     }
   } catch (error) {
     log.error("Failed to generate NHL stats JSON");
-    exit(1, error);
   }
 }
 
