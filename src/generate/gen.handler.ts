@@ -3,7 +3,7 @@ import { outputJson } from "fs-extra";
 import { prompt } from "inquirer";
 import { join, resolve } from "path";
 
-import { load } from "../config/config";
+import { load, save } from "../config/config";
 import { exit } from "../index";
 import {
   getPlayersForTeam,
@@ -17,26 +17,37 @@ import { getFileSizeOfObject, shuffle } from "../utils/misc";
 
 const { cyan, green, magenta } = chalk;
 
+export const TAG = cyan("Generate");
+
 // Typescript complains about passing numbers to chalk
 const s = (str: any) => `${str}`;
 
-const log = new Logger(cyan("Generate"));
+const log = new Logger(TAG);
 
 export default async function({
   login = "",
   password = "",
   out = "./",
   noConfig = false,
-  configPath,
+  configPath = process.cwd(),
+  saveConfig = false,
   limit = -1,
   random = false
 }: ICommandOptions): Promise<void> {
   let tryCredentials: ISportsFeedCreds = { login, password };
   try {
+    // If config is enabled (default) check for saved login information
     if (!noConfig) {
-      const { sportsfeed } = await load(configPath);
-      if (sportsfeed) {
-        tryCredentials = { ...sportsfeed };
+      log.info(`Checking for ${magenta("saved")} login info`);
+      const { filepath, config } = await load(configPath);
+      if (config && config.sportsfeed) {
+        log.info(
+          `using credentials from config file -> ${green(filepath as any)}`
+        );
+        tryCredentials = {
+          login: login || config.sportsfeed.login,
+          password: password || config.sportsfeed.password
+        };
       }
     }
 
@@ -86,6 +97,14 @@ export default async function({
         getFileSizeOfObject(allTeamsData)
       )}`
     );
+
+    if (saveConfig) {
+      log.info("saving the config to a file!");
+      const savePath = await save({ sportsfeed: { ...credentials } });
+      if (savePath) {
+        log.info(`${green("success!")} saved config to ${magenta(savePath)}`);
+      }
+    }
   } catch (error) {
     log.error("Failed to generate NHL stats JSON");
     exit(1, error);

@@ -1,6 +1,6 @@
 import * as cosmiconfig from "cosmiconfig";
 import { outputJson } from "fs-extra";
-import { dirname, join, resolve } from "path";
+import { join, resolve } from "path";
 
 import { isEmpty } from "../utils/misc";
 import IConfig from "./IConfig";
@@ -15,8 +15,8 @@ const FILENAME = `.${configName}rc`;
 let cachedConf: ICosmicConfig;
 
 export interface ICosmicConfig {
-  filepath: string;
-  config: IConfig;
+  filepath?: string;
+  config?: IConfig;
 }
 
 export async function getConfigPath(customPath?: string): Promise<string> {
@@ -24,21 +24,27 @@ export async function getConfigPath(customPath?: string): Promise<string> {
     if (isEmpty(cachedConf)) {
       await load(customPath);
     }
-    return isEmpty(cachedConf) ? process.cwd() : cachedConf.filepath;
+    return isEmpty(cachedConf)
+      ? join(process.cwd(), FILENAME)
+      : cachedConf.filepath || "";
   }
   return customPath;
 }
 
-export async function load(path: string = process.cwd()): Promise<IConfig> {
+// TODO - Custom path for load and save doesn't work as expected
+// it wont load a file but search that folder (or parent) for the rc file
+export async function load(
+  path: string = process.cwd()
+): Promise<ICosmicConfig> {
   if (!isEmpty(cachedConf)) {
-    return cachedConf.config;
+    return cachedConf;
   }
 
   try {
     const config: ICosmicConfig = await configExplorer.load(path);
     if (config) {
       cachedConf = { ...config };
-      return cachedConf.config;
+      return cachedConf;
     }
     return {};
   } catch (error) {
@@ -51,13 +57,9 @@ export async function save(data: IConfig, customPath?: string) {
     const savePath = resolve(await getConfigPath(customPath));
     const existingConfig = (await load(customPath)) || {};
 
-    await outputJson(
-      join(savePath, FILENAME),
-      { ...existingConfig, data },
-      { spaces: 2 }
-    );
+    await outputJson(savePath, { ...existingConfig, ...data }, { spaces: 2 });
 
-    return true;
+    return savePath;
   } catch (error) {
     throw error;
   }
