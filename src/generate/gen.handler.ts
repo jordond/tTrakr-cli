@@ -24,10 +24,13 @@ const s = (str: any) => `${str}`;
 
 const log = new Logger(TAG);
 
+// TODO: Use config object passed in by the middleware
+// TODO: use the output path from the config (if exists)
+
 export default async function({
   login = "",
   password = "",
-  out = "./",
+  output = "./",
   noConfig = false,
   configPath = process.cwd(),
   saveConfig = false,
@@ -35,78 +38,72 @@ export default async function({
   random = false
 }: ICommandOptions): Promise<void> {
   let tryCredentials: ISportsFeedCreds = { login, password };
-  try {
-    // If config is enabled (default) check for saved login information
-    if (!noConfig) {
-      log.info(`Checking for ${magenta("saved")} login info`);
-      const { filepath, config } = await load(configPath);
-      if (config && config.sportsfeed) {
-        log.info(
-          `using credentials from config file -> ${green(filepath as any)}`
-        );
-        tryCredentials = {
-          login: login || config.sportsfeed.login,
-          password: password || config.sportsfeed.password
-        };
-      }
+  // If config is enabled (default) check for saved login information
+  if (!noConfig) {
+    log.info(`Checking for ${magenta("saved")} login info`);
+    const { filepath, config } = await load(configPath);
+    if (config && config.sportsfeed) {
+      log.info(
+        `using credentials from config file -> ${green(filepath as any)}`
+      );
+      tryCredentials = {
+        login: login || config.sportsfeed.login,
+        password: password || config.sportsfeed.password
+      };
     }
+  }
 
-    // If either username or password is missing, enable interactive mode
-    const credentials: ISportsFeedCreds = isInteractive(tryCredentials)
-      ? await askForCredentials(tryCredentials)
-      : tryCredentials;
+  // If either username or password is missing, enable interactive mode
+  const credentials: ISportsFeedCreds = isInteractive(tryCredentials)
+    ? await askForCredentials(tryCredentials)
+    : tryCredentials;
 
-    // Validate the credentials with the API
-    await validateCredentials(credentials);
-    log.info(`${green("✔ Successfully")} validated!`);
+  // Validate the credentials with the API
+  await validateCredentials(credentials);
+  log.info(`${green("✔ Successfully")} validated!`);
 
-    // Grab all of the teams
-    log.info(`ℹ️ politely asking ${cyan("thesportsdb.com")} for all the teams`);
-    const teams = await getTeams();
-    if (!teams.length) {
-      log.error("😣  the mean server replied with no teams!");
-      return exit(1);
+  // Grab all of the teams
+  log.info(`ℹ️ politely asking ${cyan("thesportsdb.com")} for all the teams`);
+  const teams = await getTeams();
+  if (!teams.length) {
+    log.error("😣  the mean server replied with no teams!");
+    return exit(1);
+  }
+
+  log.info(`🏒  found ${cyan(s(teams.length))} NHL teams!`);
+
+  // If a limit was set, shrink the array
+  let teamsToUse = [...teams];
+  if (limit > 0) {
+    if (random) {
+      log.info(`🌀  limiting to ${cyan(s(limit))} ${magenta("random")} teams!`);
+      teamsToUse = shuffle(teamsToUse);
+    } else {
+      log.info(`📃  limiting to the first ${cyan(s(limit))} teams!`);
     }
+    teamsToUse = teamsToUse.slice(0, limit);
+  }
 
-    log.info(`🏒  found ${cyan(s(teams.length))} NHL teams!`);
+  // Add all the players to each team
+  const allTeamsData = await buildTeamWithPlayers(teamsToUse, credentials);
 
-    // If a limit was set, shrink the array
-    let teamsToUse = [...teams];
-    if (limit > 0) {
-      if (random) {
-        log.info(
-          `🌀  limiting to ${cyan(s(limit))} ${magenta("random")} teams!`
-        );
-        teamsToUse = shuffle(teamsToUse);
-      } else {
-        log.info(`📃  limiting to the first ${cyan(s(limit))} teams!`);
-      }
-      teamsToUse = teamsToUse.slice(0, limit);
+  const filename = join(output, "teams.json");
+  log.info(`📼   saving ${cyan(filename)}`);
+
+  await outputJson(resolve(filename), allTeamsData, { spaces: 2 });
+  log.info(`🚝  choo choo! File was ${green("successfully")} saved!`);
+  log.info(
+    `💾  ${chalk.blue(resolve(filename))} => ${green(
+      getFileSizeOfObject(allTeamsData)
+    )}`
+  );
+
+  if (saveConfig) {
+    log.info("saving the config to a file!");
+    const savePath = await save({ sportsfeed: { ...credentials, output } });
+    if (savePath) {
+      log.info(`${green("success!")} saved config to ${magenta(savePath)}`);
     }
-
-    // Add all the players to each team
-    const allTeamsData = await buildTeamWithPlayers(teamsToUse, credentials);
-
-    const filename = join(out, "teams.json");
-    log.info(`📼   saving ${cyan(filename)}`);
-
-    await outputJson(resolve(filename), allTeamsData, { spaces: 2 });
-    log.info(`🚝  choo choo! File was ${green("successfully")} saved!`);
-    log.info(
-      `💾  ${chalk.blue(resolve(filename))} => ${green(
-        getFileSizeOfObject(allTeamsData)
-      )}`
-    );
-
-    if (saveConfig) {
-      log.info("saving the config to a file!");
-      const savePath = await save({ sportsfeed: { ...credentials } });
-      if (savePath) {
-        log.info(`${green("success!")} saved config to ${magenta(savePath)}`);
-      }
-    }
-  } catch (error) {
-    log.error("Failed to generate NHL stats JSON");
   }
 }
 

@@ -12,11 +12,14 @@ export function addMiddleware(command: CommandModule): CommandModule {
   return {
     ...command,
     handler: (args: ICommandOptions) =>
-      before(command.handler as IYargsHandler, args)
+      middleware(command.handler as IYargsHandler, args)
   };
 }
 
-export async function before(handler: IYargsHandler, args: ICommandOptions) {
+export async function middleware(
+  handler: IYargsHandler,
+  args: ICommandOptions
+) {
   Logger.verbose = Boolean(args.verbose);
   Logger.silent = Boolean(!Logger.verbose && args.silent);
 

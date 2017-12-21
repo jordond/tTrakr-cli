@@ -9,7 +9,7 @@ declare global {
   export interface ICommandOptions {
     login?: string;
     password?: string;
-    out?: string;
+    output?: string;
     limit?: number;
     random?: boolean;
   }
@@ -32,8 +32,8 @@ const generate: CommandModule = {
         type: "string",
         desc: "Password for mysportsfeeds.com"
       })
-      .options("out", {
-        alias: ["o", "output"],
+      .options("output", {
+        alias: ["o", "out"],
         type: "string",
         default: "./",
         desc: "Path to save the created JSON file"

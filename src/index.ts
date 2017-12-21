@@ -8,7 +8,7 @@ import Logger from "./utils/logger";
 
 declare global {
   export interface ICommandOptions {
-    config?: ICosmicConfig;
+    config: ICosmicConfig;
     saveConfig?: boolean;
     configPath?: string;
     noConfig?: boolean;
