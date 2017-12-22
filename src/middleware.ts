@@ -1,4 +1,4 @@
-import chalk from "chalk";
+import c from "chalk";
 import { CommandModule } from "yargs";
 
 import { exit, TAG } from "./";
@@ -25,10 +25,10 @@ export async function middleware(
 
   const log = new Logger(TAG);
 
-  log.info(chalk`😊  Welcome to {magenta tTrakr}!`);
+  log.info(c`😊  Welcome to {magenta tTrakr}!`);
   if (args.verbose) {
     log.debug(
-      chalk`i noticed you enabled {blue verbose} mode... prepare for {red all} the things!`
+      c`i noticed you enabled {blue verbose} mode... prepare for {red all} the things!`
     );
   }
 
@@ -40,7 +40,7 @@ export async function middleware(
     if (result) {
       log.info(result);
     }
-    log.info(chalk`{blue so long!} hope you had {magenta fun} 😘`);
+    log.info(c`{blue so long!} hope you had {magenta fun} 😘`);
     return exit();
   } catch (error) {
     return exit(1, error);
@@ -49,15 +49,15 @@ export async function middleware(
 
 async function loadConfig(path?: string) {
   const log = new Logger(TAG);
-  log.debug(chalk`looking for existing {cyan "${FILENAME}"} config file`);
+  log.debug(c`looking for existing {cyan "${FILENAME}"} config file`);
   try {
     const config = await load(path);
     if (!isEmpty(config) && config.filepath) {
-      log.info(chalk`{green ✔ using config} -> {blue ${config.filepath}}`);
+      log.info(c`{green ✔ using config} -> {blue ${config.filepath}}`);
     }
     return config;
   } catch (error) {
-    log.error(chalk`something went {grey wrong} loading the config...`, error);
+    log.error(c`something went {grey wrong} loading the config...`, error);
   }
   return {};
 }

@@ -12,7 +12,7 @@ const createCosmic = cosmiconfig as any; // Typescript hack for no types
 const configExplorer = createCosmic(configName);
 
 export const FILENAME = `.${configName}rc`;
-let cachedConf: ICosmicConfig;
+let cachedConf: ICosmicConfig = {};
 
 export interface ICosmicConfig {
   filepath?: string;
