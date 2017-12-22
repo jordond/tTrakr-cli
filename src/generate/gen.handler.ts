@@ -1,9 +1,9 @@
-import chalk from "chalk";
+import c from "chalk";
 import { outputJson } from "fs-extra";
 import { prompt } from "inquirer";
 import { join, resolve } from "path";
 
-import { load, save } from "../config/config";
+import { save } from "../config/config";
 import { exit } from "../index";
 import {
   getPlayersForTeam,
@@ -15,19 +15,14 @@ import { ISportsFeedTeam } from "../sportsfeed/ISportsFeed";
 import Logger from "../utils/logger";
 import { getFileSizeOfObject, shuffle } from "../utils/misc";
 
-const { cyan, green, magenta } = chalk;
-
-export const TAG = cyan("Generate");
-
-// Typescript complains about passing numbers to chalk
-const s = (str: any) => `${str}`;
+export const TAG = c`{cyan Generate}`;
 
 const log = new Logger(TAG);
 
-// TODO: Use config object passed in by the middleware
 // TODO: use the output path from the config (if exists)
 
-export default async function({
+export default async function handler({
+  config: { config = {} },
   login = "",
   password = "",
   output = "./",
@@ -37,20 +32,15 @@ export default async function({
   limit = -1,
   random = false
 }: ICommandOptions): Promise<void> {
+  const { sportsfeed = {} } = config;
+
   let tryCredentials: ISportsFeedCreds = { login, password };
-  // If config is enabled (default) check for saved login information
   if (!noConfig) {
-    log.info(`Checking for ${magenta("saved")} login info`);
-    const { filepath, config } = await load(configPath);
-    if (config && config.sportsfeed) {
-      log.info(
-        `using credentials from config file -> ${green(filepath as any)}`
-      );
-      tryCredentials = {
-        login: login || config.sportsfeed.login,
-        password: password || config.sportsfeed.password
-      };
-    }
+    log.info(c`Checking for {magenta saved} login info`);
+    tryCredentials = {
+      login: login || sportsfeed.login || "",
+      password: password || sportsfeed.password || ""
+    };
   }
 
   // If either username or password is missing, enable interactive mode
@@ -60,26 +50,28 @@ export default async function({
 
   // Validate the credentials with the API
   await validateCredentials(credentials);
-  log.info(`${green("✔ Successfully")} validated!`);
+  log.info(`{green ✔ Successfully} validated!`);
 
   // Grab all of the teams
-  log.info(`ℹ️ politely asking ${cyan("thesportsdb.com")} for all the teams`);
+  log.info(c`ℹ️ politely asking {cyan thesportsdb.com} for all the teams`);
   const teams = await getTeams();
   if (!teams.length) {
     log.error("😣  the mean server replied with no teams!");
     return exit(1);
   }
 
-  log.info(`🏒  found ${cyan(s(teams.length))} NHL teams!`);
+  log.info(c`🏒  found {cyan ${teams.length as any}} NHL teams!`);
 
   // If a limit was set, shrink the array
   let teamsToUse = [...teams];
   if (limit > 0) {
     if (random) {
-      log.info(`🌀  limiting to ${cyan(s(limit))} ${magenta("random")} teams!`);
+      log.info(
+        c`🌀  limiting to {cyan ${limit as any}} {magenta random} teams!`
+      );
       teamsToUse = shuffle(teamsToUse);
     } else {
-      log.info(`📃  limiting to the first ${cyan(s(limit))} teams!`);
+      log.info(c`📃  limiting to the first {cyan ${limit as any}} teams!`);
     }
     teamsToUse = teamsToUse.slice(0, limit);
   }
@@ -87,22 +79,25 @@ export default async function({
   // Add all the players to each team
   const allTeamsData = await buildTeamWithPlayers(teamsToUse, credentials);
 
-  const filename = join(output, "teams.json");
-  log.info(`📼   saving ${cyan(filename)}`);
+  const outputPath = output || sportsfeed.output || "./";
+  const filename = join(outputPath, "teams.json");
+  log.info(c`📼   saving {cyan ${filename}}`);
 
   await outputJson(resolve(filename), allTeamsData, { spaces: 2 });
-  log.info(`🚝  choo choo! File was ${green("successfully")} saved!`);
+  log.info(c`🚝  choo choo! File was {green successfully} saved!`);
   log.info(
-    `💾  ${chalk.blue(resolve(filename))} => ${green(
-      getFileSizeOfObject(allTeamsData)
-    )}`
+    c`💾  {blue ${resolve(filename)}} => {green ${getFileSizeOfObject(
+      allTeamsData
+    )}}`
   );
 
   if (saveConfig) {
     log.info("saving the config to a file!");
-    const savePath = await save({ sportsfeed: { ...credentials, output } });
+    const savePath = await save({
+      sportsfeed: { ...credentials, output: outputPath }
+    });
     if (savePath) {
-      log.info(`${green("success!")} saved config to ${magenta(savePath)}`);
+      log.info(c`{green success!} saved config to {magenta ${savePath}}`);
     }
   }
 }
@@ -113,19 +108,15 @@ function isInteractive({ login = "", password = "" }: ISportsFeedCreds) {
 
 async function askForCredentials({ login, password }: ISportsFeedCreds) {
   const questions = [];
-  log.info(`Enter your login details for ${cyan("http://MySportsFeeds.com")}`);
+  log.info(c`Enter your login details for {cyan http://MySportsFeeds.com}`);
 
   if (!login) {
     questions.push({
       type: "input",
       name: "login",
       message: "Enter your login:",
-      validate(input = "") {
-        if (input.length) {
-          return true;
-        }
-        return "Please enter a valid login (non-empty)";
-      }
+      validate: (input = "") =>
+        Boolean(input.length) || "Please enter a valid login (non-empty)"
     });
   }
 
@@ -134,12 +125,8 @@ async function askForCredentials({ login, password }: ISportsFeedCreds) {
       type: "password",
       name: "password",
       message: "Enter your password:",
-      validate(input = "") {
-        if (input.length) {
-          return true;
-        }
-        return "Please enter a valid password";
-      }
+      validate: (input = "") =>
+        Boolean(input.length) || "Please enter a valid password"
     });
   }
 
@@ -153,16 +140,13 @@ async function askForCredentials({ login, password }: ISportsFeedCreds) {
 }
 
 async function validateCredentials(credentials: ISportsFeedCreds) {
+  const { password = "" } = credentials;
   log.debug(
-    `Creds: login -> ${green(credentials.login as any)}, password -> ${green(
-      "[redacted:" + credentials!.password!.length + "]"
-    )}`
+    c`Creds: login -> {green ${credentials.login as any}}, password -> {green [redacted:${password.length as any}]}`
   );
 
   log.info(
-    `Attempting to validate ${green(credentials.login as any)} with ${cyan(
-      "www.mysportsfeed.com"
-    )}`
+    c`Attempting to validate {green ${credentials.login as any}} with {cyan www.mysportsfeed.com}`
   );
 
   const invalidLogin = !await validate(credentials);
@@ -181,7 +165,7 @@ async function buildTeamWithPlayers(
   credentials: ISportsFeedCreds
 ) {
   log.info(
-    `⛸️  fetching ${cyan("player")} data for ${cyan(s(teams.length))} teams`
+    c`⛸️  fetching {cyan player} data for {cyan ${teams.length as any}} teams`
   );
 
   const results: ISportsFeedTeam[] = [];
@@ -191,11 +175,13 @@ async function buildTeamWithPlayers(
       return `[${p < 10 ? "0" + p : p}/${teams.length}]`;
     };
     const pretty = () =>
-      `${magenta(value.abbreviation)} -> ${cyan(value.name)}`;
+      c`{magenta ${value.abbreviation}} -> {cyan ${value.name}}`;
 
     const players = await getPlayersForTeam(value.abbreviation, credentials);
     if (players && players.length) {
-      log.debug(`✔️  ${pos()} got ${green(s(players.length))} for ${pretty()}`);
+      log.debug(
+        c`✔️  ${pos()} got {green ${players.length as any}} for ${pretty()}`
+      );
       results.push({ ...value, players });
     } else {
       log.warning(`❌  ${pos()} failed to find players for ${pretty()}`);
@@ -206,12 +192,12 @@ async function buildTeamWithPlayers(
   if (difference) {
     log
       .info(`😕  was only able to grab data for some teams`)
-      .warning(`😢 couldn't grab data for ${magenta(s(difference))} teams`);
+      .warning(
+        c`😢 couldn't grab data for {magenta ${difference as any}} teams`
+      );
   } else {
     log.info(
-      `😃  ${green("successfully")} grabbed data for all ${magenta(
-        s(teams.length)
-      )} teams`
+      c`😃  {green successfully")} grabbed data for all {magenta ${teams.length as any}} teams`
     );
   }
 

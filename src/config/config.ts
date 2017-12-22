@@ -40,8 +40,6 @@ export async function exists() {
   }
 }
 
-// TODO - Custom path for load and save doesn't work as expected
-// it wont load a file but search that folder (or parent) for the rc file
 export async function load(
   path: string = process.cwd()
 ): Promise<ICosmicConfig> {
