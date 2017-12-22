@@ -1,8 +1,22 @@
 import c from "chalk";
-import { prompt } from "inquirer";
+import { Answers, prompt as originalPrompt, Question } from "inquirer";
 
-import { ISportsFeedCreds, validate } from "../sportsfeed";
-import Logger from "./logger";
+import { create, LEVEL_INFO, Logger } from "./logger";
+
+export function prompt(
+  questions: Question[] | Question,
+  logTag: string = c`{green  ? }`,
+  level = LEVEL_INFO
+): Promise<Answers> {
+  const newQuestions = (Array.isArray(questions) ? questions : [questions]).map(
+    question => ({
+      prefix: create(logTag).prefix(level),
+      ...question
+    })
+  );
+
+  return originalPrompt(newQuestions);
+}
 
 export interface IBasicCredentials {
   login?: string;
@@ -44,28 +58,4 @@ export async function askForCredentials(
     log.e(`Failed to gather login information for ${website}`, error);
     throw error;
   }
-}
-
-export async function validateSportsFeedCredentials(
-  credentials: ISportsFeedCreds,
-  log: Logger
-) {
-  const { login, password = "" } = credentials;
-  log.debug(
-    c`Creds: login -> {green ${login as any}}, password -> {green [redacted:${password.length as any}]}`
-  );
-
-  log.info(
-    c`Attempting to validate {green ${login as any}} with {cyan www.mysportsfeed.com}`
-  );
-
-  const invalidLogin = !await validate(credentials);
-  if (invalidLogin) {
-    log.e(
-      "✘ Failed to authenticate, ensure your username/password is correct!"
-    );
-    throw new Error("Authentication failed");
-  }
-
-  return true;
 }
