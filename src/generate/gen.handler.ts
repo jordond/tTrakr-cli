@@ -16,8 +16,6 @@ import { getFileSizeOfObject, shuffle } from "../utils/misc";
 export const TAG = c`{cyan Generate}`;
 const log = new Logger(TAG);
 
-// TODO: use the output path from the config (if exists)
-
 export default async function handler({
   config: { config = {} },
   login = "",
