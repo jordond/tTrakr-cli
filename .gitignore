@@ -3,6 +3,7 @@ out/
 .awcache/
 docs/
 cliargs.js
+teams.json
 
 lib-cov
 *.seed

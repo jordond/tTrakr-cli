@@ -6,8 +6,9 @@
 import { CommandModule } from "yargs"; // tslint:disable-line
 
 import generate from "./generate";
+import init from "./init";
 
 /**
  * @constant {CommandModule[]} - Array of yargs CommandModules
  */
-export default [generate];
+export default [init, generate];
