@@ -2,9 +2,6 @@ import { Argv, CommandModule } from "yargs";
 
 import handler from "./gen.handler";
 
-// TODO inject CONFIG stuff into handler
-// ex handler: (argv) => middleware(handler)
-
 declare global {
   export interface ICommandOptions {
     login?: string;

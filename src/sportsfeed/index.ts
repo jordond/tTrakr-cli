@@ -1,6 +1,8 @@
+import c from "chalk";
 import fetch from "node-fetch";
 
 import { get } from "../utils/fetch";
+import Logger from "../utils/logger";
 import { ISportsFeedPlayers, ISportsFeedTeam } from "./ISportsFeed";
 import { ensureAbbrev, teamMap, validateTeam } from "./nhlTeams";
 
@@ -83,4 +85,32 @@ export async function getPlayersForTeam(
 
 function createTeamURL(team: string): string {
   return `${URL_PLAYERS}&team=${ensureAbbrev(team).toLowerCase()}`;
+}
+
+export async function validateSportsFeedCredentials(
+  credentials: ISportsFeedCreds,
+  log: Logger,
+  throws = true
+) {
+  const { login, password = "" } = credentials;
+  log.debug(
+    c`Creds: login -> {green ${login as any}}, password -> {green [redacted:${password.length as any}]}`
+  );
+
+  log.info(
+    c`Attempting to validate {green ${login as any}} with {cyan www.mysportsfeed.com}`
+  );
+
+  const invalidLogin = !await validate(credentials);
+  if (invalidLogin) {
+    log.e(
+      "✘ Failed to authenticate, ensure your username/password is correct!"
+    );
+    if (throws) {
+      throw new Error("Authentication failed");
+    }
+    return false;
+  }
+
+  return true;
 }

@@ -12,7 +12,7 @@ const createCosmic = cosmiconfig as any; // Typescript hack for no types
 const configExplorer = createCosmic(configName);
 
 export const FILENAME = `.${configName}rc`;
-let cachedConf: ICosmicConfig;
+let cachedConf: ICosmicConfig = {};
 
 export interface ICosmicConfig {
   filepath?: string;
@@ -40,8 +40,6 @@ export async function exists() {
   }
 }
 
-// TODO - Custom path for load and save doesn't work as expected
-// it wont load a file but search that folder (or parent) for the rc file
 export async function load(
   path: string = process.cwd()
 ): Promise<ICosmicConfig> {

@@ -1,23 +1,25 @@
-import chalk from "chalk";
+import c from "chalk";
 
 import { prettyObj, timestamp } from "./misc";
 
 // tslint:disable:function-name
 
-const { yellow, red, grey } = chalk;
+const { yellow, red, grey } = c;
 
-const LEVEL_ERROR = chalk`{bgRed ERROR}`;
-const LEVEL_WARN = chalk`{bgYellow WARN }`;
-const LEVEL_INFO = chalk`{blue INFO }`;
-const LEVEL_DEBUG = chalk`{grey DEBUG}`;
+export const LEVEL_ERROR = c`{bgRed ERROR}`;
+export const LEVEL_WARN = c`{bgYellow WARN }`;
+export const LEVEL_INFO = c`{blue INFO }`;
+export const LEVEL_DEBUG = c`{grey DEBUG}`;
 
-export default class Logger {
+export const create = (tag?: string) => new Logger(tag);
+
+export class Logger {
   public static verbose: boolean = false;
   public static silent: boolean = false;
 
   public tag: string;
 
-  constructor(tag: string) {
+  constructor(tag: string = "CLI") {
     this.tag = tag;
   }
 
@@ -49,10 +51,14 @@ export default class Logger {
     return this.out(LEVEL_ERROR, red(msg), data);
   }
 
+  public prefix(level: string = LEVEL_INFO): string {
+    return c`{grey [${timestamp()}][${level}][${this.tag}]}`;
+  }
+
   private out(level: string, msg: string, data?: any): Logger {
     if (this.canOutput(level)) {
       console.log(
-        chalk`{grey [${timestamp()}]}[${level}][${this.tag}] ${msg}${
+        c`${this.prefix(level)} ${msg}${
           data ? "\n" + (data instanceof Error ? data : prettyObj(data)) : ""
         }`
       );
@@ -70,3 +76,5 @@ export default class Logger {
     return true;
   }
 }
+
+export default Logger;
