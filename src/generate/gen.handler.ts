@@ -4,14 +4,16 @@ import { join, resolve } from "path";
 
 import { save } from "../config/config";
 import { exit } from "../index";
-import { getPlayersForTeam, getTeams, ISportsFeedCreds } from "../sportsfeed";
-import { ISportsFeedTeam } from "../sportsfeed/ISportsFeed";
 import {
-  askForCredentials,
+  getPlayersForTeam,
+  getTeams,
+  ISportsFeedCreds,
   validateSportsFeedCredentials
-} from "../utils/cli-auth";
+} from "../sportsfeed";
+import { ISportsFeedTeam } from "../sportsfeed/ISportsFeed";
 import Logger from "../utils/logger";
 import { getFileSizeOfObject, shuffle } from "../utils/misc";
+import { askForCredentials } from "../utils/prompt";
 
 export const TAG = c`{cyan Generate}`;
 const log = new Logger(TAG);
