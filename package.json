@@ -8,6 +8,9 @@
   "bin": {
     "tkr": "bin/index.js"
   },
+  "engines": {
+    "node": ">=7.10.1"
+  },
   "scripts": {
     "precommit": "lint-staged",
     "lint": "tslint --project tsconfig.json --fix src/**/*.ts",

@@ -1,5 +1,6 @@
 {
   "eslint.enable": false,
   "editor.formatOnSave": true,
-  "tslint.autoFixOnSave": true
+  "tslint.autoFixOnSave": true,
+  "search.useIgnoreFiles": true
 }

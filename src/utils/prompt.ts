@@ -11,6 +11,7 @@ export function prompt(
 ): Promise<Answers> {
   const newQuestions = ensureArray(questions).map(question => ({
     prefix: create(logTag).prefix(level),
+    message: " ", // Enables not passing a message property
     ...question
   }));
 
