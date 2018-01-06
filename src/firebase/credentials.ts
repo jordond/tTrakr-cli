@@ -1,9 +1,11 @@
+import c from "chalk";
 import {
   credential as Credential,
   initializeApp,
   ServiceAccount
 } from "firebase-admin";
 
+import Logger from "../utils/logger";
 import { timeoutPromise } from "../utils/misc";
 import { databaseURL } from "./";
 
@@ -16,19 +18,24 @@ export function validateSchema(data: object | ServiceAccount): boolean {
 }
 
 export async function validateAuth(credentials: ServiceAccount) {
+  const log = new Logger(c`{red Firebase}`);
   try {
     const credential = Credential.cert(credentials);
     const testFirebase = initializeApp({ credential, databaseURL });
 
-    const success: boolean = await timeoutPromise(
+    const result: boolean = await timeoutPromise(
       testFirebase
         .database()
         .ref(FIREBASE_TEST_NODE)
-        .once("value", snapshot => Boolean(snapshot.val()))
+        .once("value", snapshot => {
+          log.debug("firebase auth result: ", snapshot.val());
+          return Boolean(snapshot.val());
+        })
     );
 
-    return success;
+    return result;
   } catch (error) {
+    log.debug(c`firebase auth error: {red ${error}}`);
     return false;
   }
 }

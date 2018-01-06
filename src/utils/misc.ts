@@ -87,10 +87,16 @@ export async function timeoutPromise(
   let ref: NodeJS.Timer;
   const timeoutDelay = new Promise(
     (resolve, reject) =>
-      (ref = setTimeout(() => reject(`Timed out after ${timeout}`), timeout))
+      (ref = setTimeout(
+        () => reject(`Operation timed out after ${timeout}ms`),
+        timeout
+      ))
   )
     .then(x => clearTimeout(ref))
-    .catch(x => clearTimeout(ref));
+    .catch(x => {
+      clearTimeout(ref);
+      throw x;
+    });
 
   return Promise.race([promise, timeoutDelay]);
 }
