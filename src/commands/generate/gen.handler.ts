@@ -2,18 +2,18 @@ import c from "chalk";
 import { outputJson } from "fs-extra";
 import { join, resolve } from "path";
 
-import { save } from "../config/config";
-import { exit } from "../index";
+import { save } from "../../config/config";
+import { exit } from "../../index";
 import {
   getPlayersForTeam,
   getTeams,
   ISportsFeedCreds,
   validateSportsFeedCredentials
-} from "../sportsfeed";
-import { ISportsFeedTeam } from "../sportsfeed/ISportsFeed";
-import Logger from "../utils/logger";
-import { getFileSizeOfObject, shuffle } from "../utils/misc";
-import { askForCredentials } from "../utils/prompt";
+} from "../../sportsfeed";
+import { ISportsFeedTeam } from "../../sportsfeed/ISportsFeed";
+import Logger from "../../utils/logger";
+import { getFileSizeOfObject, shuffle } from "../../utils/misc";
+import { askForCredentials } from "../../utils/prompt";
 
 export const TAG = c`{cyan Generate}`;
 const log = new Logger(TAG);

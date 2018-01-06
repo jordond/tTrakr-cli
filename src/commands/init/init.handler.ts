@@ -3,12 +3,15 @@ import { ServiceAccount } from "firebase-admin";
 import { Question } from "inquirer";
 import { resolve } from "path";
 
-import { save } from "../config/config";
-import { validateAuth, validateSchema } from "../firebase/credentials";
-import { ISportsFeedCreds, validateSportsFeedCredentials } from "../sportsfeed";
-import Logger from "../utils/logger";
-import { isEmpty } from "../utils/misc";
-import { askForCredentials, prompt } from "../utils/prompt";
+import { save } from "../../config/config";
+import { validateAuth, validateSchema } from "../../firebase/credentials";
+import {
+  ISportsFeedCreds,
+  validateSportsFeedCredentials
+} from "../../sportsfeed";
+import Logger from "../../utils/logger";
+import { isEmpty } from "../../utils/misc";
+import { askForCredentials, prompt } from "../../utils/prompt";
 
 const TAG = c`{blueBright INIT}`;
 
