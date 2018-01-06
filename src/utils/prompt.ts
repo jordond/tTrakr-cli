@@ -2,18 +2,18 @@ import c from "chalk";
 import { Answers, prompt as originalPrompt, Question } from "inquirer";
 
 import { create, LEVEL_INFO, Logger } from "./logger";
+import { ensureArray } from "./misc";
 
 export function prompt(
   questions: Question[] | Question,
   logTag: string = c`{green  ? }`,
   level = LEVEL_INFO
 ): Promise<Answers> {
-  const newQuestions = (Array.isArray(questions) ? questions : [questions]).map(
-    question => ({
-      prefix: create(logTag).prefix(level),
-      ...question
-    })
-  );
+  const newQuestions = ensureArray(questions).map(question => ({
+    prefix: create(logTag).prefix(level),
+    message: " ", // Enables not passing a message property
+    ...question
+  }));
 
   return originalPrompt(newQuestions);
 }

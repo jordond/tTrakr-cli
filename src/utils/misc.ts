@@ -1,4 +1,5 @@
 import * as filesize from "filesize";
+
 /**
  * @module misc
  * @description A place to store small utility functions that don't belong elsewhere
@@ -77,4 +78,19 @@ export function shuffle(arr: any[]): any[] {
 
 export function isEmpty(obj: object): boolean {
   return Boolean(!obj || !Object.keys(obj).length);
+}
+
+export async function timeoutPromise(
+  promise: Promise<any>,
+  timeout: number = 1000
+): Promise<any> {
+  let ref: NodeJS.Timer;
+  const timeoutDelay = new Promise(
+    (resolve, reject) =>
+      (ref = setTimeout(() => reject(`Timed out after ${timeout}`), timeout))
+  )
+    .then(x => clearTimeout(ref))
+    .catch(x => clearTimeout(ref));
+
+  return Promise.race([promise, timeoutDelay]);
 }

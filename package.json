@@ -8,6 +8,9 @@
   "bin": {
     "tkr": "bin/index.js"
   },
+  "engines": {
+    "node": ">=7.10.1"
+  },
   "scripts": {
     "precommit": "lint-staged",
     "lint": "tslint --project tsconfig.json --fix src/**/*.ts",
@@ -33,6 +36,7 @@
     "core-js": "^2.5.1",
     "cosmiconfig": "^3.1.0",
     "filesize": "^3.5.11",
+    "firebase-admin": "^5.7.0",
     "fs-extra": "^5.0.0",
     "inquirer": "^4.0.1",
     "mkdir-promise": "^1.0.0",
