@@ -1,7 +1,8 @@
 import c from "chalk";
+import { resolve } from "path";
 import { CommandModule } from "yargs";
 
-import { exit, TAG } from "./";
+import { TAG } from "./";
 import { FILENAME, load } from "./config/config";
 import Logger from "./utils/logger";
 import { isEmpty } from "./utils/misc";
@@ -50,6 +51,9 @@ export async function middleware(
 async function loadConfig(path?: string) {
   const log = new Logger(TAG);
   log.debug(c`looking for existing {cyan "${FILENAME}"} config file`);
+  if (path) {
+    log.debug(c`searching user supplied path -> {green ${resolve(path)}}`);
+  }
   try {
     const config = await load(path);
     if (!isEmpty(config) && config.filepath) {
@@ -60,4 +64,15 @@ async function loadConfig(path?: string) {
     log.error(c`something went {grey wrong} loading the config...`, error);
   }
   return {};
+}
+
+export function exit(code: number = 0, message: string = ""): void {
+  const log = new Logger(TAG);
+  if (code > 0) {
+    log.error("😟  Exiting with failure");
+    if (message) {
+      log.error(message);
+    }
+  }
+  process.exit(code);
 }

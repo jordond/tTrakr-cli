@@ -36,7 +36,9 @@ export default async function({ config = {}, ...argv }: ICommandOptions) {
     }
   }
 
-  const gaveUp = () => c`:( seems like you {red gave up}...`;
+  const giveUp = () => {
+    throw new Error(":( seems like you {red gave up}...");
+  };
 
   log.info(c`lets build ourself a {blue config} file!`);
 
@@ -44,13 +46,13 @@ export default async function({ config = {}, ...argv }: ICommandOptions) {
   const { login, password } = argv;
   const sportsfeed = await getSportsfeedCredentials({ login, password });
   if (isEmpty(sportsfeed)) {
-    return gaveUp();
+    giveUp();
   }
 
   log.info(c`{grey Step {magenta 2}: {red Firebase} authentication}`);
   const firebase = await getFirebaseCredentialsJSON(argv.auth);
   if (isEmpty(firebase)) {
-    return gaveUp();
+    giveUp();
   }
 
   // Save the config and return the status message

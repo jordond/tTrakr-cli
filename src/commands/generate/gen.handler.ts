@@ -3,7 +3,6 @@ import { outputJson } from "fs-extra";
 import { join, resolve } from "path";
 
 import { save } from "../../config/config";
-import { exit } from "../../index";
 import {
   getPlayersForTeam,
   getTeams,
@@ -58,7 +57,7 @@ export default async function handler({
   const teams = await getTeams();
   if (!teams.length) {
     log.error("😣  the mean server replied with no teams!");
-    return exit(1);
+    throw new Error("SportsFeed.com returned no team results");
   }
 
   log.info(c`🏒  found {cyan ${teams.length as any}} NHL teams!`);
