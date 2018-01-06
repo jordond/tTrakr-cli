@@ -3,8 +3,7 @@ import * as yargs from "yargs";
 import { ICosmicConfig } from "./config/config";
 
 import commands from "./commands";
-import { addMiddleware } from "./middleware";
-import Logger from "./utils/logger";
+import { addMiddleware, exit } from "./middleware";
 
 declare global {
   export interface ICommandOptions {
@@ -50,17 +49,6 @@ export function start(): yargs.Arguments | undefined {
 
     return yargsInstance;
   } catch (error) {
-    process.exit(1);
+    exit(1, error);
   }
-}
-
-export function exit(code: number = 0, message: string = ""): void {
-  const log = new Logger(TAG);
-  if (code > 0) {
-    log.error("😟  Exiting with failure");
-    if (message) {
-      log.error(message);
-    }
-  }
-  process.exit(code);
 }
