@@ -82,7 +82,7 @@ export function isEmpty(obj: object): boolean {
 
 export async function timeoutPromise(
   promise: Promise<any>,
-  timeout: number = 1000
+  timeout: number = 1500
 ): Promise<any> {
   let ref: NodeJS.Timer;
   const timeoutDelay = new Promise(
@@ -92,7 +92,10 @@ export async function timeoutPromise(
         timeout
       ))
   )
-    .then(x => clearTimeout(ref))
+    .then(x => {
+      clearTimeout(ref);
+      return x;
+    })
     .catch(x => {
       clearTimeout(ref);
       throw x;

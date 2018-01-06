@@ -27,10 +27,7 @@ export async function validateAuth(credentials: ServiceAccount) {
       testFirebase
         .database()
         .ref(FIREBASE_TEST_NODE)
-        .once("value", snapshot => {
-          log.debug("firebase auth result: ", snapshot.val());
-          return Boolean(snapshot.val());
-        })
+        .once("value", snapshot => Boolean(snapshot.val()))
     );
 
     return result;
