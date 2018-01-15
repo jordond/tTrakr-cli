@@ -18,6 +18,15 @@ export function timestamp(): string {
   return new Date().toLocaleTimeString();
 }
 
+export function camelize(str: string) {
+  return str.replace(/(?:^\w|[A-Z]|\b\w|\s+)/g, (match, index) => {
+    if (+match === 0) {
+      return "";
+    }
+    return index === 0 ? match.toLowerCase() : match.toUpperCase();
+  });
+}
+
 /**
  * Takes a string input and capitalizes the first letter
  * @param string - String to capitalize

@@ -23,7 +23,7 @@ export function start(): yargs.Arguments | undefined {
   try {
     const yargsInstance = commands
       .map(addMiddleware)
-      .reduce((prev, curr) => prev.command(curr), yargs)
+      .reduce((yarg, command) => yarg.command(command), yargs)
       .demandCommand(1, "You must enter a command")
       .option("save-config", {
         alias: "S",

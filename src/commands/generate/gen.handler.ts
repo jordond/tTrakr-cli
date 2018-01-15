@@ -50,7 +50,7 @@ export default async function handler({
 
   // Validate the credentials with the API
   await validateSportsFeedCredentials(credentials, log);
-  log.info(`{green ✔ Successfully} validated!`);
+  log.info(c`{green ✔ Successfully} validated!`);
 
   // Grab all of the teams
   log.info(c`ℹ️ politely asking {cyan thesportsdb.com} for all the teams`);
@@ -141,7 +141,7 @@ async function buildTeamWithPlayers(
       );
   } else {
     log.info(
-      c`😃  {green successfully")} grabbed data for all {magenta ${teams.length as any}} teams`
+      c`😃  {green successfully} grabbed data for all {magenta ${teams.length as any}} teams`
     );
   }
 

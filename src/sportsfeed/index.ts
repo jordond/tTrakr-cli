@@ -1,8 +1,10 @@
 import c from "chalk";
+import { transform } from "lodash";
 import fetch from "node-fetch";
 
 import { get } from "../utils/fetch";
 import Logger from "../utils/logger";
+import { camelize } from "../utils/misc";
 import { ISportsFeedPlayers, ISportsFeedTeam } from "./ISportsFeed";
 import { ensureAbbrev, teamMap, validateTeam } from "./nhlTeams";
 
@@ -77,7 +79,13 @@ export async function getPlayersForTeam(
       teamURL,
       buildAuthHeader(credentials)
     )) as any;
-    return results.map((x: { player: any }) => ({ ...x.player }));
+
+    // Return a list of players, make sure the keys are camel-case
+    return results.map((x: { player: any }) =>
+      transform({ ...x.player }, (res: any, val: any, key: string) => {
+        res[camelize(key)] = val;
+      })
+    );
   } catch (error) {
     return [];
   }

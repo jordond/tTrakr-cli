@@ -6,6 +6,7 @@ import { TAG } from "./";
 import { FILENAME, load } from "./config/config";
 import Logger from "./utils/logger";
 import { isEmpty } from "./utils/misc";
+import { randomMessage } from "./utils/fun";
 
 export type IYargsHandler = (args: any) => Promise<void | any>;
 
@@ -41,7 +42,7 @@ export async function middleware(
     if (result) {
       log.info(result);
     }
-    log.info(c`{blue so long!} hope you had {magenta fun} 😘`);
+    log.info(c`{blue so long!} ${randomMessage()}`);
     return exit();
   } catch (error) {
     return exit(1, error);

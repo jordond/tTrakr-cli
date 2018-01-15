@@ -5,11 +5,12 @@
 
 import { CommandModule } from "yargs"; // tslint:disable-line
 
-import generate from "./commands/generate";
-import init from "./commands/init";
-import verify from "./commands/verify";
+import generate from "./generate";
+import init from "./init";
+import seed from "./seed";
+import verify from "./verify";
 
 /**
  * @constant {CommandModule[]} - Array of yargs CommandModules
  */
-export default [init, generate, verify];
+export default [init, generate, seed, verify];
