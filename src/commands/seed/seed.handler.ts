@@ -1,9 +1,8 @@
 import c from "chalk";
-import { ServiceAccount } from "firebase-admin";
 import { resolve } from "path";
 
-import { validateAuth, validateSchema } from "../../firebase/credentials";
-import { validateSportsFeedCredentials } from "../../sportsfeed/index";
+import { validateSchema } from "../../firebase/credentials";
+import { normalizeSportsFeed } from "../../firebase/database";
 import { ISportsFeedTeam } from "../../sportsfeed/ISportsFeed";
 import Logger from "../../utils/logger";
 import { isEmpty } from "../../utils/misc";
@@ -24,9 +23,6 @@ export default async function({ config = {}, ...argv }: ICommandOptions) {
     throw new Error("Couldn't find '.ttrakrrc'");
   }
 
-  const { sportsfeed = {}, firebase } = config.config;
-
-  // Step 1: Validate the data file
   let data: ISportsFeedTeam[];
   try {
     log.info(c`I am going to {yellow attempt} to validate {blue ${argv.data}}`);
@@ -50,22 +46,13 @@ export default async function({ config = {}, ...argv }: ICommandOptions) {
   // Step 2: Push it to Firebase
 
   // Build the data structure
-  const formattedData = data.reduce(
-    (prev, curr: ISportsFeedTeam) => {
-      const { players, ...team } = curr;
-      return {
-        teams: {
-          [team.name]: team,
-          ...prev.teams
-        },
-        players: {
-          [team.abbreviation]: players,
-          ...prev.players
-        }
-      };
-    },
-    { teams: [], players: [] }
+  const { teams, players } = normalizeSportsFeed(data);
+
+  log.info(
+    c`pushing {green ${String(Object.keys(teams).length)}} to {red firebase}`
   );
 
-  log.info("test: ", formattedData);
+  log.info(
+    c`pushing {green ${String(Object.keys(players).length)}} to {red firebase}`
+  );
 }
