@@ -2,10 +2,11 @@ import c from "chalk";
 import { resolve } from "path";
 
 import { validateSchema } from "../../firebase/credentials";
-import { normalizeSportsFeed } from "../../firebase/database";
+import { normalizeSportsFeed, push } from "../../firebase/database";
+import { exit } from "../../middleware";
 import { ISportsFeedTeam } from "../../sportsfeed/ISportsFeed";
 import Logger from "../../utils/logger";
-import { isEmpty } from "../../utils/misc";
+import { isEmpty, objectLength } from "../../utils/misc";
 
 const TAG = c`{yellow Seed}`;
 
@@ -48,11 +49,18 @@ export default async function({ config = {}, ...argv }: ICommandOptions) {
   // Build the data structure
   const { teams, players } = normalizeSportsFeed(data);
 
-  log.info(
-    c`pushing {green ${String(Object.keys(teams).length)}} to {red firebase}`
-  );
+  try {
+    log.info(
+      c`seeding {green ${objectLength(teams) as any}} teams to {red firebase}`
+    );
+    await push("/teams", teams);
 
-  log.info(
-    c`pushing {green ${String(Object.keys(players).length)}} to {red firebase}`
-  );
+    log.info(c`seeding {cyan players} to {red firebase}`);
+    await push("/players", players);
+  } catch (error) {
+    log.error(c`failed to save data to firebase...`);
+    return exit(1, error);
+  }
+
+  return c`{green looks} {cyan like} {red we} {magenta did} {blue it!}`;
 }

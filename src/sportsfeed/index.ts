@@ -5,7 +5,7 @@ import fetch from "node-fetch";
 import { get } from "../utils/fetch";
 import Logger from "../utils/logger";
 import { camelize } from "../utils/misc";
-import { ISportsFeedPlayers, ISportsFeedTeam } from "./ISportsFeed";
+import { ISportsFeedPlayer, ISportsFeedTeam } from "./ISportsFeed";
 import { ensureAbbrev, teamMap, validateTeam } from "./nhlTeams";
 
 const URL_NHL_TEAMS =
@@ -68,7 +68,7 @@ export async function getTeams(
 export async function getPlayersForTeam(
   nameOrAbbrev: string,
   credentials: ISportsFeedCreds
-): Promise<ISportsFeedPlayers[]> {
+): Promise<ISportsFeedPlayer[]> {
   try {
     if (!validateTeam(nameOrAbbrev)) {
       return [];

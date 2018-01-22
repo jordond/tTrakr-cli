@@ -4,9 +4,11 @@ import { CommandModule } from "yargs";
 
 import { TAG } from "./";
 import { FILENAME, load } from "./config/config";
+import { validate } from "./firebase/credentials";
+import { init } from "./firebase/index";
+import { randomMessage } from "./utils/fun";
 import Logger from "./utils/logger";
 import { isEmpty } from "./utils/misc";
-import { randomMessage } from "./utils/fun";
 
 export type IYargsHandler = (args: any) => Promise<void | any>;
 
@@ -35,6 +37,12 @@ export async function middleware(
   }
 
   const config = await loadConfig(args.configPath);
+
+  const { firebase } = config.config as any;
+  if (!isEmpty(firebase) && validate(firebase)) {
+    log.debug(c`poking {red fire}{blue base} ;)`);
+    init(firebase);
+  }
 
   // Call the handler, await its response catch any errors
   try {

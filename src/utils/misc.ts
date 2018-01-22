@@ -55,6 +55,10 @@ export function objectIs(target: any, shouldBe: string): boolean {
   return typeof target === shouldBe.toLowerCase();
 }
 
+export function objectLength(obj: object): number {
+  return Object.keys(obj).length;
+}
+
 export function flatten(target: any[]): any[] {
   return [].concat.apply([], target);
 }
