@@ -1,25 +1,19 @@
 import c from "chalk";
 import { ServiceAccount } from "firebase-admin";
 
+import { verifyConfig } from "../../";
 import { validateAuth, validateSchema } from "../../firebase/credentials";
-import { validateSportsFeedCredentials } from "../../sportsfeed/index";
+import { validateSportsFeedCredentials } from "../../sportsfeed";
 import Logger from "../../utils/logger";
-import { isEmpty } from "../../utils/misc";
 
 const TAG = c`{green VERIFY}`;
 
 export default async function({ config = {} }: ICommandOptions) {
   const log = new Logger(TAG);
 
-  if (!config.filepath || (!config.config || isEmpty(config.config))) {
-    log.warning(c`😱  {cyanBright doh!}`);
-    log.info(c`I {red couldn't} find a {green .ttrackrrc}`);
-    log.info(c`{blue create} a config file using {cyan 'tkr init'}`);
-    log.info(c`or use the {magenta '--configPath'} options`);
-    throw new Error("Couldn't find '.ttrakrrc'");
-  }
+  verifyConfig(config);
 
-  const { sportsfeed = {}, firebase } = config.config;
+  const { sportsfeed = {}, firebase = {} } = config.config || {};
 
   // Step 1: Validate SportsFeed Credentials
   log.info(c`{grey Step {cyan 1}: SportsFeed}`);

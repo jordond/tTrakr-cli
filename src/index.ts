@@ -1,9 +1,11 @@
-import chalk from "chalk";
+import c from "chalk";
 import * as yargs from "yargs";
-import { ICosmicConfig } from "./config/config";
 
 import commands from "./commands";
+import { ICosmicConfig } from "./config/config";
 import { addMiddleware, exit } from "./middleware";
+import Logger from "./utils/logger";
+import { isEmpty } from "./utils/misc";
 
 declare global {
   export interface ICommandOptions {
@@ -17,7 +19,7 @@ declare global {
   }
 }
 
-export const TAG = chalk.magenta("tTrakr");
+export const TAG = c.magenta("tTrakr");
 
 export function start(): yargs.Arguments | undefined {
   try {
@@ -50,5 +52,15 @@ export function start(): yargs.Arguments | undefined {
     return yargsInstance;
   } catch (error) {
     exit(1, error);
+  }
+}
+
+export function verifyConfig(config: ICosmicConfig) {
+  if (!config.filepath || (!config.config || isEmpty(config.config))) {
+    const log = new Logger(TAG);
+    log.info(c`I {red couldn't} find a {green .ttrackrrc}`);
+    log.info(c`{blue create} a config file using {cyan 'tkr init'}`);
+    log.info(c`or use the {magenta '--configPath'} options`);
+    throw new Error("Couldn't find '.ttrakrrc'");
   }
 }
