@@ -1,23 +1,35 @@
 import { Argv, CommandModule } from "yargs";
 
-import handler from "./seed.handler";
+import handler from "./simulate.handler";
 
 declare global {
   export interface ICommandOptions {
-    data?: string;
+    speedFactor?: number;
   }
 }
 
-const seed: CommandModule = {
+const simulate: CommandModule = {
   handler,
-  command: "seed [options] <data>",
-  describe: "Seed Firebase with Player and team data",
+  command: "simulate",
+  aliases: "start",
+  describe: "Begin the game simulation",
   builder: (yargs: Argv) => {
-    return yargs.example(
-      "$0 seed ./data/teams.json",
-      "Seed the Firebase database with data.  Use 'tkr generate' to create a data file."
-    );
+    return yargs
+      .option("speedFactor", {
+        alias: ["speed", "s"],
+        desc: "Set the speed scale factor",
+        type: "number",
+        default: 0
+      })
+      .example(
+        "$0 simulate",
+        "Starts the simulation of hockey games, with regular time"
+      )
+      .example(
+        "$0 simulate --speed 30",
+        "Starts simulation with speed factor of 30, ie 1 Minute sim time = 1 Second real-time"
+      );
   }
 };
 
-export default seed;
+export default simulate;

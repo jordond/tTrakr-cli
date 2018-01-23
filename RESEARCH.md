@@ -14,7 +14,7 @@ Calculate speed factor
 * Tells you how many milliseconds is equal to a real-time minute
 
 ```javascript
-minToMilliseconds(speedFactor) => 60 * 1000 / (speedFactor >= 2 ? x * 2 : 1)
+minToMilliseconds(speedFactor) => 60 * 1000 / (speedFactor > 1 ? x * 2 : 1)
 ```
 
 Create simulation object
