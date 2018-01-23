@@ -36,8 +36,29 @@ Get the difference in milliseconds between the start time and the current time
 const diff = _ => new Date().getTime() - sim.startTime.getTime();
 ```
 
-Add the difference in milliseconds to the midnight time
+take the difference and scale it with the speed factor
+
+```javascript
+const rev = speedFactor => 60 * 1000 * speedFactor / (60 * 1000.0);
+```
+
+Add the adjusted difference in milliseconds to the midnight time
 
 ```javascript
 addMilliseconds(simTime, diff()); // 00:02:27
+```
+
+Test the reversing algorithm
+
+```javascript
+function test(num = 30) {
+  let i = num + 1;
+  while (--i !== -1) {
+    let c = calc(i);
+    let r = rev(c);
+    console.log(
+      `var: ${i} -> calc: ${c}, rev: ${r} -> ${c === r ? "PASS" : "FAIL"}`
+    );
+  }
+}
 ```
