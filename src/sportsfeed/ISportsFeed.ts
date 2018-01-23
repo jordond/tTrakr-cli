@@ -1,4 +1,4 @@
-export interface ISportsFeedPlayers {
+export interface ISportsFeedPlayer {
   id: string;
   firstName: string;
   lastName: string;
@@ -26,5 +26,5 @@ export interface ISportsFeedTeam {
     jersey: string | null;
     logo: string | null;
   };
-  players?: ISportsFeedPlayers[];
+  players?: ISportsFeedPlayer[];
 }

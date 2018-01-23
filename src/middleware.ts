@@ -4,6 +4,9 @@ import { CommandModule } from "yargs";
 
 import { TAG } from "./";
 import { FILENAME, load } from "./config/config";
+import { validate } from "./firebase/credentials";
+import { init } from "./firebase/index";
+import { randomMessage } from "./utils/fun";
 import Logger from "./utils/logger";
 import { isEmpty } from "./utils/misc";
 
@@ -35,13 +38,19 @@ export async function middleware(
 
   const config = await loadConfig(args.configPath);
 
+  const { firebase } = config.config as any;
+  if (!isEmpty(firebase) && validate(firebase)) {
+    log.debug(c`poking {red fire}{blue base} ;)`);
+    init(firebase);
+  }
+
   // Call the handler, await its response catch any errors
   try {
     const result: any = await handler({ config, ...args });
     if (result) {
       log.info(result);
     }
-    log.info(c`{blue so long!} hope you had {magenta fun} 😘`);
+    log.info(c`{blue so long!} ${randomMessage()}`);
     return exit();
   } catch (error) {
     return exit(1, error);

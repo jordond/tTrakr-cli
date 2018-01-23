@@ -1,3 +1,7 @@
+import Ajv from "ajv";
+
+import schema from "./nhlTeamsSchema";
+
 export const teamMap = {
   "Anaheim Ducks": "ANA",
   "Arizona Coyotes": "ARI",
@@ -40,4 +44,17 @@ export function ensureAbbrev(nameOrAbbrev: string): string {
     return teamMap[nameOrAbbrev];
   }
   return Object.values(teamMap).find(x => nameOrAbbrev === x);
+}
+
+export function validateSchema(data: any, throws: boolean = true) {
+  const validate = new Ajv().compile(schema);
+  const isValid = validate(data);
+
+  if (!isValid) {
+    if (throws) {
+      throw new Error(`Unable to validate: ${validate.errors}`);
+    }
+    return false;
+  }
+  return true;
 }

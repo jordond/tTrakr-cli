@@ -1,9 +1,11 @@
 import c from "chalk";
+import { transform } from "lodash";
 import fetch from "node-fetch";
 
 import { get } from "../utils/fetch";
 import Logger from "../utils/logger";
-import { ISportsFeedPlayers, ISportsFeedTeam } from "./ISportsFeed";
+import { camelize } from "../utils/misc";
+import { ISportsFeedPlayer, ISportsFeedTeam } from "./ISportsFeed";
 import { ensureAbbrev, teamMap, validateTeam } from "./nhlTeams";
 
 const URL_NHL_TEAMS =
@@ -66,7 +68,7 @@ export async function getTeams(
 export async function getPlayersForTeam(
   nameOrAbbrev: string,
   credentials: ISportsFeedCreds
-): Promise<ISportsFeedPlayers[]> {
+): Promise<ISportsFeedPlayer[]> {
   try {
     if (!validateTeam(nameOrAbbrev)) {
       return [];
@@ -77,7 +79,13 @@ export async function getPlayersForTeam(
       teamURL,
       buildAuthHeader(credentials)
     )) as any;
-    return results.map((x: { player: any }) => ({ ...x.player }));
+
+    // Return a list of players, make sure the keys are camel-case
+    return results.map((x: { player: any }) =>
+      transform({ ...x.player }, (res: any, val: any, key: string) => {
+        res[camelize(key)] = val;
+      })
+    );
   } catch (error) {
     return [];
   }

@@ -1,6 +1,6 @@
 import c from "chalk";
-
 import { ServiceAccount } from "firebase-admin";
+
 import { validateAuth, validateSchema } from "../../firebase/credentials";
 import { validateSportsFeedCredentials } from "../../sportsfeed/index";
 import Logger from "../../utils/logger";
