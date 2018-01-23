@@ -58,6 +58,7 @@ export function start(): yargs.Arguments | undefined {
 export function verifyConfig(config: ICosmicConfig) {
   if (!config.filepath || (!config.config || isEmpty(config.config))) {
     const log = new Logger(TAG);
+    log.warning(c`😱  {cyanBright doh!}`);
     log.info(c`I {red couldn't} find a {green .ttrackrrc}`);
     log.info(c`{blue create} a config file using {cyan 'tkr init'}`);
     log.info(c`or use the {magenta '--configPath'} options`);

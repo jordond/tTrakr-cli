@@ -62,3 +62,19 @@ function test(num = 30) {
   }
 }
 ```
+
+new
+
+```javascript
+const rTOs = x => 60000 / (x * 2 || 1);
+const sTOr = x => rTOs(x) * 60 / (x > 1 ? 1 : 60);
+```
+
+convert sim milliseconds into real time
+ie convert 1 minute SIM time into 1 second real time (speed factor 30)
+ie convert 1 minute SIM time into 1 minute real time (speed factor 0)
+
+```javascript
+simMillisToRealMillis = (spf, millis = 60 * 1000) =>
+  millis / (spf > 1 ? spf * 2 : 1);
+```
