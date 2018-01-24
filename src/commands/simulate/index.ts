@@ -4,7 +4,9 @@ import handler from "./simulate.handler";
 
 declare global {
   export interface ICommandOptions {
-    speedFactor?: number;
+    factor?: number;
+    maxGames?: number;
+    chance?: number;
   }
 }
 
@@ -15,11 +17,22 @@ const simulate: CommandModule = {
   describe: "Begin the game simulation",
   builder: (yargs: Argv) => {
     return yargs
-      .option("speedFactor", {
-        alias: ["speed", "s"],
+      .option("factor", {
+        alias: ["speed", "s", "speedFactor"],
         desc: "Set the speed scale factor",
         type: "number",
         default: 0
+      })
+      .option("maxGames", {
+        alias: ["max", "m"],
+        desc: "Max number of games to allow",
+        type: "number"
+      })
+      .option("chance", {
+        alias: "c",
+        desc: "The likelyhood of events happening, higher = more events",
+        type: "number",
+        default: 5
       })
       .example(
         "$0 simulate",

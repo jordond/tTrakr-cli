@@ -32,7 +32,6 @@ export function start(): yargs.Arguments | undefined {
         desc: "Save config information to a file for future use"
       })
       .option("config-path", {
-        alias: "c",
         desc:
           "Path to the folder containing the config file, if omitted will search for the CWD"
       })

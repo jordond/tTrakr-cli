@@ -1,5 +1,6 @@
 import Ajv from "ajv";
 
+import { ISportsFeedPlayer, ISportsFeedTeam } from "./ISportsFeed";
 import schema from "./nhlTeamsSchema";
 
 export const teamMap = {
@@ -57,4 +58,35 @@ export function validateSchema(data: any, throws: boolean = true) {
     return false;
   }
   return true;
+}
+
+export function normalizeSportsFeed(data: ISportsFeedTeam[]) {
+  return data.reduce(
+    (prev, curr: ISportsFeedTeam) => {
+      const { players = [], ...team } = curr;
+      const normalizedPlayers = players.reduce(
+        (p, c) => ({
+          [createPlayerKey(c)]: c,
+          ...p
+        }),
+        {}
+      );
+
+      return {
+        teams: {
+          [team.abbreviation]: team,
+          ...prev.teams
+        },
+        players: {
+          [team.abbreviation]: normalizedPlayers,
+          ...prev.players
+        }
+      };
+    },
+    { teams: [], players: [] }
+  );
+}
+
+function createPlayerKey({ firstName, lastName }: ISportsFeedPlayer) {
+  return `${firstName.charAt(0)}${lastName}`.toLowerCase();
 }

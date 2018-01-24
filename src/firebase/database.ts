@@ -1,40 +1,22 @@
-import { ISportsFeedPlayer, ISportsFeedTeam } from "../sportsfeed/ISportsFeed";
+import { database } from "firebase-admin";
+
 import { firebase } from "./";
 
-export function normalizeSportsFeed(data: ISportsFeedTeam[]) {
-  return data.reduce(
-    (prev, curr: ISportsFeedTeam) => {
-      const { players = [], ...team } = curr;
-      const normalizedPlayers = players.reduce(
-        (p, c) => ({
-          [createPlayerKey(c)]: c,
-          ...p
-        }),
-        {}
-      );
+export const DB_PATH_GAMES = "/games";
+export const DB_PATH_TEAMS = "/teams";
+export const DB_PATH_PLAYERS = "/players";
 
-      return {
-        teams: {
-          [team.abbreviation]: team,
-          ...prev.teams
-        },
-        players: {
-          [team.abbreviation]: normalizedPlayers,
-          ...prev.players
-        }
-      };
-    },
-    { teams: [], players: [] }
-  );
-}
-
-export function push(path: string = "/", data: any) {
-  const ref = firebase()
+export function ref(path: string = "/"): database.Reference {
+  return firebase()
     .database()
     .ref(path);
-  return ref.set(data);
 }
 
-function createPlayerKey({ firstName, lastName }: ISportsFeedPlayer) {
-  return `${firstName.charAt(0)}${lastName}`.toLowerCase();
+export function set(path: string = "/", data: any) {
+  return ref(path).set(data);
+}
+
+export async function getOnce(path: string = "/") {
+  const result = await ref(path).once("value");
+  return result.val();
 }

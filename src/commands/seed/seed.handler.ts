@@ -2,9 +2,10 @@ import c from "chalk";
 import { resolve } from "path";
 
 import { validateSchema } from "../../firebase/credentials";
-import { normalizeSportsFeed, push } from "../../firebase/database";
+import { DB_PATH_PLAYERS, DB_PATH_TEAMS, set } from "../../firebase/database";
 import { exit } from "../../middleware";
 import { ISportsFeedTeam } from "../../sportsfeed/ISportsFeed";
+import { normalizeSportsFeed } from "../../sportsfeed/nhlTeams";
 import Logger from "../../utils/logger";
 import { isEmpty, objectLength } from "../../utils/misc";
 
@@ -53,10 +54,10 @@ export default async function({ config = {}, ...argv }: ICommandOptions) {
     log.info(
       c`seeding {green ${objectLength(teams) as any}} teams to {red firebase}`
     );
-    await push("/teams", teams);
+    await set(DB_PATH_TEAMS, teams);
 
     log.info(c`seeding {cyan players} to {red firebase}`);
-    await push("/players", players);
+    await set(DB_PATH_PLAYERS, players);
   } catch (error) {
     log.error(c`failed to save data to firebase...`);
     return exit(1, error);
