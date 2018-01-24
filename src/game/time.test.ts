@@ -1,93 +1,51 @@
-import { addMilliseconds } from "date-fns";
-
+import { createDate } from "../utils/date";
 import {
   calucluateDifference,
-  realMillisToSimMillis,
-  realSecondToSimMillis,
-  simMinutesToRealSeconds,
+  getElapsedSimTime,
   simMinuteToRealMillis
 } from "./time";
 
-describe("lets figure this out", () => {
-  it("should be 1 sim minute", () => {
-    expect(realMillisToSimMillis(30, 1000)).toBe(60000);
-  });
-
-  it("should be 1 sim second", () => {
-    expect(realMillisToSimMillis(0, 1000)).toBe(1000);
-  });
-});
-
 describe("Simulation and Real-time conversion", () => {
-  describe("speed factor 30", () => {
-    it("1 minute SIM === 1 second REAL", () => {
-      expect(simMinuteToRealMillis(30)).toBe(1000);
-    });
-
-    it.skip("1 second REAL === 1 min SIM", () => {
-      expect(realSecondToSimMillis(30)).toBe(60 * 1000);
-    });
-  });
-
-  describe("speed factor 15", () => {
-    it("2 minute SIM === 1 second REAL", () => {
-      expect(simMinuteToRealMillis(15)).toBe(2000);
-    });
-
-    it.skip("1 second REAL === 2 minute SIM", () => {
-      expect(realSecondToSimMillis(15)).toBe(60 * 2000);
-    });
-  });
-
-  describe("speed factor 0", () => {
-    it("1 minute SIM === 1 minute REAL", () => {
-      expect(simMinuteToRealMillis(0)).toBe(60 * 1000);
-    });
-
-    it.skip("1 minute REAL === 1 min SIM", () => {
-      expect(realSecondToSimMillis(0)).toBe(60 * 1000);
-    });
-  });
-
   it("should calulate time difference", () => {
-    const start = new Date();
-    start.setHours(10, 0, 0, 0);
-
-    const current = new Date();
-    current.setHours(11, 0, 0, 0);
+    const start = createDate([10, 0, 0, 0]);
+    const current = createDate([11, 0, 0, 0]);
 
     expect(calucluateDifference(start, current)).toBe(3600000);
   });
 
-  describe("factor 30 -> Start time 10:00:00", () => {
-    const start = new Date();
-    const simTime = new Date();
-    beforeEach(() => {
-      start.setHours(10, 0, 0, 0);
-      simTime.setHours(0, 0, 0, 0);
-      expect(start.getHours()).toBe(10);
-      expect(simTime.getHours()).toBe(0);
-    });
+  it("should convert 1 SIM minute to 1 REAL second", () => {
+    expect(simMinuteToRealMillis(30)).toBe(1000);
+  });
 
-    it.skip("Real elapsed 1 Min === 1 hour SIM", () => {
-      const factors = [30];
+  it("should convert 1 SIM minute to 2 REAL second", () => {
+    expect(simMinuteToRealMillis(15)).toBe(2000);
+  });
 
-      factors.forEach(factor => {
-        const speed = simMinuteToRealMillis(factor);
-        console.log(speed);
-        const elapsed = new Date(); // 1 minute
-        elapsed.setHours(10, 0, 1, 0);
+  it("should convert 1 SIM minute to 1 REAL minute", () => {
+    expect(simMinuteToRealMillis(0)).toBe(60000);
+  });
+});
 
-        // sim time should be 01:00 am
-        const elapsedMillis = calucluateDifference(start, elapsed);
-        expect(elapsedMillis).toBe(1000); // 1 second
+describe("Time Conversion", () => {
+  let start: Date;
+  beforeEach(() => {
+    start = createDate([10, 0, 0, 0]);
+    expect(start.getHours()).toBe(10);
+  });
 
-        // convert elapsed time into sim time
-        console.log(simTime.toLocaleTimeString());
-        const addedSimTime = addMilliseconds(simTime, elapsedMillis * speed);
-        console.log(addedSimTime.toLocaleTimeString());
-        expect(addedSimTime.getHours()).toBe(1); // 1 min = 1 hour -> 01:00:00
-      });
+  it("convert elapsed real-time to sim time", () => {
+    const factors = [
+      { factor: 60, result: "00:02:00" },
+      { factor: 30, result: "00:01:00" },
+      { factor: 15, result: "00:00:30" },
+      { factor: 7.5, result: "00:00:15" },
+      { factor: 0, result: "00:00:01" }
+    ];
+
+    factors.forEach(({ factor, result }) => {
+      const elapsed = createDate([10, 0, 1, 0]); // 1 minute
+      const elapsedSim: Date = getElapsedSimTime(factor, start, elapsed);
+      expect(elapsedSim.toLocaleTimeString()).toBe(result);
     });
   });
 });

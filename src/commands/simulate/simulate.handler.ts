@@ -1,6 +1,6 @@
 import c from "chalk";
 
-import { scaleMinsToSeconds } from "../../game/time";
+import { simMinuteToRealMillis } from "../../game/time";
 import { verifyConfig } from "../../index";
 import Logger from "../../utils/logger";
 
@@ -18,7 +18,7 @@ export default async function({
   log
     .info(c`using speed factor {cyan ${speedFactor as any}}`)
     .info(
-      c`1 {green Sim-Time} minute is equal to {blue ${scaleMinsToSeconds(
+      c`1 {green Sim-Time} minute is equal to {blue ${simMinuteToRealMillis(
         speedFactor
       ) as any}} {green real-time} seconds`
     );
