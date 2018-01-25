@@ -17,6 +17,10 @@ export function set(path: string = "/", data: any) {
   return ref(path).set(data);
 }
 
+export function update(path: string = "/", data: any) {
+  return ref(path).update(data);
+}
+
 export async function getOnce(path: string = "/") {
   const result = await ref(path).once("value");
   return result.val();

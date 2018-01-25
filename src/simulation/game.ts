@@ -1,6 +1,5 @@
 import { ISportsFeedTeam } from "../sportsfeed/ISportsFeed";
 import { shuffle } from "../utils/misc";
-import { length } from "../utils/object";
 import { ISimulation } from "./ISimulation";
 import { randomRangeInt } from "./rng";
 
@@ -43,9 +42,9 @@ export function buildGames(
   }
 
   // Ensure there are an even amount of teams
-  const teamsToUse = shuffle(
-    teams.length % 2 === 0 ? teams : teams.slice(0, teams.length - 1)
-  );
+  const teamsToUse = shuffle([
+    ...(teams.length % 2 === 0 ? teams : teams.slice(0, teams.length - 1))
+  ]);
 
   // If max games is 0 or -1, set to the length of the half the teams
   const adjustedMaxGames = maxGames > 0 ? maxGames : teamsToUse.length / 2;

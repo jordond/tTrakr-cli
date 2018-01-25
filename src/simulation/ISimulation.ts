@@ -1,5 +1,4 @@
 export interface ISimulation {
-  id?: string;
   started?: boolean;
   start?: Date;
   factor?: number;

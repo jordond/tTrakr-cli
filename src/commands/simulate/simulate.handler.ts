@@ -1,13 +1,12 @@
 import c from "chalk";
 
-import { clearInterval } from "timers";
 import { verifyConfig } from "../../index";
 import { exit } from "../../middleware";
 import { Simulation } from "../../simulation/simulation";
 import { simMinuteToRealMillis } from "../../simulation/time";
 import Logger from "../../utils/logger";
 import { flatten } from "../../utils/misc";
-import { length } from "../../utils/object";
+import { prompt } from "../../utils/prompt";
 
 const TAG = c`{yellow Sim}`;
 
@@ -33,24 +32,41 @@ export default async function({
   );
 
   // Init simulation
-  const simulation = await Simulation.build({
-    factor,
-    chance,
-    maxGames,
-    startRange
-  });
+  const settings = { factor, chance, maxGames, startRange };
+  const simulation = await Simulation.build(settings);
   const players = flatten(simulation.teams.map(x => x.players)).length;
 
+  // Display the player/team stats
   log
     .debug(c`using {cyan settings}`, simulation.settings)
-    .info(c`found {blue ${length(simulation.teams) as any}} teams`)
+    .info(c`found {blue ${simulation.teams.length as any}} teams`)
     .info(c`found {cyan ${players as any}} players`);
 
-  // Build the games
-  // Team VS Team
-  // use max limit => -1 === unlimited
+  // Display the game info
+  log.info(c`created {green ${simulation.games.length as any}} games`);
+  if (Logger.verbose) {
+    log.debug(c`List of games: [{cyan Home}] - [{magenta Away}]`);
+    simulation.games.forEach(({ home, away }) =>
+      log.debug(c`[{cyan ${home.name}}] VS [{magenta ${away.name}}]`)
+    );
+  }
 
-  // Start the simulation
+  log.info(c`{green starting} the {cyan simulation}`);
+  simulation.start();
+
+  log.info(c`press {bold {blue s}} to {red stop}`);
+  await prompt({
+    name: "command",
+    message: "enter command:",
+    type: "input",
+    validate: input => input.toLowerCase() === "s"
+  });
+
+  log.info(c`stopping the {cyan simulation}!`);
+  await simulation.stop();
+
+  exit();
+
   // Check if game needs to start
   // start game
 
@@ -66,8 +82,4 @@ export default async function({
   // new penalty
   // game finished
   // all games finished
-  setTimeout(() => {
-    simulation.stop();
-    exit();
-  }, 10000);
 }

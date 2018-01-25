@@ -5,13 +5,14 @@ import {
   DB_PATH_TEAMS,
   getOnce,
   remove,
-  set
+  set,
+  update
 } from "../firebase/database";
 import { ISportsFeedPlayer, ISportsFeedTeam } from "../sportsfeed/ISportsFeed";
 import { deNormalizeSportsFeed } from "../sportsfeed/nhlTeams";
-import { uuid } from "../utils/misc";
 import { buildGames, ISimGame, normalizeGames } from "./game";
 import { ISimulation } from "./ISimulation";
+import { Loop } from "./loop";
 
 export interface IDBTeams {
   [abbrev: string]: ISportsFeedTeam;
@@ -27,8 +28,7 @@ export class Simulation {
   public static async build(settings: ISimulation, doInit = true) {
     const instance = new Simulation({
       ...settings,
-      started: false,
-      id: uuid()
+      started: false
     });
     if (doInit) {
       await instance.init();
@@ -40,6 +40,7 @@ export class Simulation {
   private _games: ISimGame[];
   private _settings: ISimulation;
   private _isInit: boolean;
+  private _loop: Loop;
 
   constructor(settings: ISimulation) {
     this._settings = settings;
@@ -64,9 +65,34 @@ export class Simulation {
     return this._teams || [];
   }
 
+  public get games() {
+    return this._games || [];
+  }
+
+  public start() {
+    if (!this._loop || !this._loop.active) {
+      const promise = new Promise(async (resolve, reject) => {
+        this._loop = new Loop(resolve);
+        this._loop.start(this._settings, this._games);
+        await this.updateStartData();
+      });
+      return promise;
+    }
+  }
+
+  public async restart() {
+    await this.stop();
+    await this.createGames();
+
+    return this.start();
+  }
+
   public async stop() {
+    if (this._loop && this._loop.active) {
+      this._loop.destroy();
+    }
     await remove(DB_PATH_SIMULATION);
-    await remove(`/${this.settings.id}`);
+    await remove(DB_PATH_GAMES);
   }
 
   private async fetchTeamsAndPlayers() {
@@ -83,7 +109,12 @@ export class Simulation {
 
   private async createGames() {
     this._games = buildGames(this._teams, this.settings);
-    await set(`/${this.settings.id}`, normalizeGames(this._games));
+    await set(DB_PATH_GAMES, normalizeGames(this._games));
+  }
+
+  private async updateStartData() {
+    const data: ISimulation = { started: true, start: new Date() };
+    await update(DB_PATH_SIMULATION, data);
   }
 }
 
