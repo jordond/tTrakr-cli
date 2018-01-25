@@ -10,6 +10,16 @@ import * as filesize from "filesize";
  */
 export function noop() {} /* tslint:disable-line */
 
+export function delay(ms: number) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+export function uuid() {
+  return Math.random()
+    .toString(36)
+    .substr(2, 9);
+}
+
 export function prettyObj(obj: any): string {
   return JSON.stringify(obj, null, 2);
 }
@@ -32,8 +42,8 @@ export function camelize(str: string) {
  * @param string - String to capitalize
  * @returns {string} - Capitalized string
  */
-export function capitalizeFirstLetter(string: string): string {
-  return string.charAt(0).toUpperCase() + string.slice(1);
+export function capitalizeFirstLetter(str: string): string {
+  return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
 /**

@@ -5,6 +5,7 @@ import { resolve } from "path";
 
 import { save } from "../../config/config";
 import { validateAuth, validateSchema } from "../../firebase/credentials";
+import { exit } from "../../middleware";
 import {
   ISportsFeedCreds,
   validateSportsFeedCredentials
@@ -60,7 +61,8 @@ export default async function({ config = {}, ...argv }: ICommandOptions) {
     { sportsfeed, firebase },
     argv.force
   );
-  return statusMessage;
+  log.info(statusMessage);
+  exit();
 }
 
 async function confirmContinue(

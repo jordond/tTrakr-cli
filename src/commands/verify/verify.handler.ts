@@ -1,25 +1,20 @@
 import c from "chalk";
 import { ServiceAccount } from "firebase-admin";
 
+import { verifyConfig } from "../../";
 import { validateAuth, validateSchema } from "../../firebase/credentials";
-import { validateSportsFeedCredentials } from "../../sportsfeed/index";
+import { exit } from "../../middleware";
+import { validateSportsFeedCredentials } from "../../sportsfeed";
 import Logger from "../../utils/logger";
-import { isEmpty } from "../../utils/misc";
 
 const TAG = c`{green VERIFY}`;
 
 export default async function({ config = {} }: ICommandOptions) {
   const log = new Logger(TAG);
 
-  if (!config.filepath || (!config.config || isEmpty(config.config))) {
-    log.warning(c`😱  {cyanBright doh!}`);
-    log.info(c`I {red couldn't} find a {green .ttrackrrc}`);
-    log.info(c`{blue create} a config file using {cyan 'tkr init'}`);
-    log.info(c`or use the {magenta '--configPath'} options`);
-    throw new Error("Couldn't find '.ttrakrrc'");
-  }
+  verifyConfig(config);
 
-  const { sportsfeed = {}, firebase } = config.config;
+  const { sportsfeed = {}, firebase = {} } = config.config || {};
 
   // Step 1: Validate SportsFeed Credentials
   log.info(c`{grey Step {cyan 1}: SportsFeed}`);
@@ -53,7 +48,8 @@ export default async function({ config = {} }: ICommandOptions) {
 
   // Make sure all checks passed
   if ([spValid, fbValid].every(x => x)) {
-    return c`{magenta VALID!}  you have {bold {blue FULL}} access {bold ;)}`;
+    log.info(c`{magenta VALID!}  you have {bold {blue FULL}} access {bold ;)}`);
+    return exit();
   }
 
   throw new Error(

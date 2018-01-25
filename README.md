@@ -15,5 +15,3 @@ WIP
 WIP
 
 ## Developing the framework
-
-WIP

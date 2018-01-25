@@ -9,7 +9,8 @@
       "args": ["--no-cache", "${workspaceRoot}/tools/debugCLI.ts"],
       "cwd": "${workspaceRoot}",
       "protocol": "inspector",
-      "sourceMaps": true
+      "sourceMaps": true,
+      "smartStep": true
     },
     {
       "type": "node",

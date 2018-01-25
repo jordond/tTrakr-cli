@@ -22,7 +22,8 @@ export async function validateAuth(credentials: ServiceAccount) {
       testFirebase
         .database()
         .ref(FIREBASE_TEST_NODE)
-        .once("value", snapshot => Boolean(snapshot.val()))
+        .once("value", snapshot => Boolean(snapshot.val())),
+      15 * 1000
     );
 
     return result;

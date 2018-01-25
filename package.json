@@ -36,6 +36,7 @@
     "chalk": "^2.3.0",
     "core-js": "^2.5.3",
     "cosmiconfig": "^3.1.0",
+    "date-fns": "^1.29.0",
     "filesize": "^3.5.11",
     "firebase-admin": "^5.8.0",
     "fs-extra": "^5.0.0",
