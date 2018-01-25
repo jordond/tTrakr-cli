@@ -36,7 +36,7 @@ export class Loop {
   private loop(settings: ISimulation, games: ISimGame[]) {
     // TODO LOOP
     this._temp += 1;
-    if (this._temp === 200) {
+    if (this._temp === 10) {
       this.destroy();
       this._resolve();
     }

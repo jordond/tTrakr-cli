@@ -2,6 +2,7 @@ import c from "chalk";
 
 import { verifyConfig } from "../../index";
 import { exit } from "../../middleware";
+import { ISimGame } from "../../simulation/game";
 import { Simulation } from "../../simulation/simulation";
 import { simMinuteToRealMillis } from "../../simulation/time";
 import Logger from "../../utils/logger";
@@ -43,17 +44,17 @@ export default async function({
     .info(c`found {cyan ${players as any}} players`);
 
   // Display the game info
-  log.info(c`created {green ${simulation.games.length as any}} games`);
-  if (Logger.verbose) {
-    log.debug(c`List of games: [{cyan Home}] - [{magenta Away}]`);
-    simulation.games.forEach(({ home, away }) =>
-      log.debug(c`[{cyan ${home.name}}] VS [{magenta ${away.name}}]`)
-    );
-  }
+  displayCreatedGames(simulation.games);
 
   log.info(c`{green starting} the {cyan simulation}`);
-  simulation.start();
+  simulation.start(async () => {
+    log.info("Simulation ended");
+    log.info(c`auto-{cyan restarting} the simulation!`);
+    await simulation.restart();
+    displayCreatedGames(simulation.games);
+  });
 
+  // TODO change this, it needs to just check for keypress
   log.info(c`press {bold {blue s}} to {red stop}`);
   await prompt({
     name: "command",
@@ -82,4 +83,15 @@ export default async function({
   // new penalty
   // game finished
   // all games finished
+}
+
+function displayCreatedGames(games: ISimGame[]) {
+  const log = new Logger(TAG);
+  log.info(c`created {green ${games.length as any}} games`);
+  if (Logger.verbose) {
+    log.debug(c`List of games: [{cyan Home}] - [{magenta Away}]`);
+    games.forEach(({ home, away }) =>
+      log.debug(c`[{cyan ${home.name}}] VS [{magenta ${away.name}}]`)
+    );
+  }
 }

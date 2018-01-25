@@ -24,6 +24,8 @@ export interface IDBPlayers {
   };
 }
 
+export type ISimulationCallback = (value?: any) => void;
+
 export class Simulation {
   public static async build(settings: ISimulation, doInit = true) {
     const instance = new Simulation({
@@ -41,6 +43,7 @@ export class Simulation {
   private _settings: ISimulation;
   private _isInit: boolean;
   private _loop: Loop;
+  private _callback: ISimulationCallback;
 
   constructor(settings: ISimulation) {
     this._settings = settings;
@@ -69,22 +72,25 @@ export class Simulation {
     return this._games || [];
   }
 
-  public start() {
+  public start(callback: ISimulationCallback) {
     if (!this._loop || !this._loop.active) {
-      const promise = new Promise(async (resolve, reject) => {
+      new Promise(async (resolve, reject) => {
         this._loop = new Loop(resolve);
         this._loop.start(this._settings, this._games);
         await this.updateStartData();
-      });
-      return promise;
+      })
+        .then(callback)
+        .catch(err => {
+          throw new Error(err);
+        });
     }
   }
 
-  public async restart() {
+  public async restart(callback = this._callback) {
     await this.stop();
     await this.createGames();
 
-    return this.start();
+    return this.start(callback);
   }
 
   public async stop() {
