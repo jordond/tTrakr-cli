@@ -21,8 +21,7 @@
     "cli": "ts-node --no-cache tools/debugCLI",
     "cli:inspect": "ts-node --no-cache --inspect tools/debugCLI",
     "prebuild": "rimraf dist",
-    "build": "tsc",
-    "docs": "rimraf './docs' && typedoc --mode modules --externalPattern '**/node_modules/**' --out ./docs ./src"
+    "build": "tsc"
   },
   "repository": {
     "type": "git",
