@@ -52,6 +52,9 @@ export default async function({
     log.info(c`auto-{cyan restarting} the simulation!`);
     await simulation.restart();
     displayCreatedGames(simulation.games);
+
+    // TODO check cli flag for auto-restart
+    // OR restart count.  If not, then stop it here.
   });
 
   // TODO change this, it needs to just check for keypress
