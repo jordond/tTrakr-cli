@@ -44,12 +44,7 @@ export async function middleware(
 
   // Call the handler, await its response catch any errors
   try {
-    const result: any = await handler({ config, ...args });
-    if (result) {
-      log.info(result);
-    }
-    log.info(c`{blue so long!} ${randomMessage()}`);
-    return exit();
+    handler({ config, ...args });
   } catch (error) {
     return exit(1, error);
   }
@@ -80,6 +75,8 @@ export function exit(code: number = 0, message: string = ""): void {
     if (message) {
       log.error(message);
     }
+  } else {
+    log.info(c`{blue so long!} ${randomMessage()}`);
   }
   process.exit(code);
 }

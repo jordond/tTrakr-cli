@@ -3,6 +3,7 @@ import { outputJson } from "fs-extra";
 import { join, resolve } from "path";
 
 import { save } from "../../config/config";
+import { exit } from "../../middleware";
 import {
   getPlayersForTeam,
   getTeams,
@@ -98,6 +99,8 @@ export default async function handler({
       log.info(c`{green success!} saved config to {magenta ${savePath}}`);
     }
   }
+
+  exit();
 }
 
 function isInteractive({ login = "", password = "" }: ISportsFeedCreds) {

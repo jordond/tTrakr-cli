@@ -7,6 +7,7 @@ declare global {
     factor?: number;
     maxGames?: number;
     chance?: number;
+    startRange?: number;
   }
 }
 
@@ -26,13 +27,20 @@ const simulate: CommandModule = {
       .option("maxGames", {
         alias: ["max", "m"],
         desc: "Max number of games to allow",
-        type: "number"
+        type: "number",
+        default: -1
       })
       .option("chance", {
         alias: "c",
         desc: "The likelyhood of events happening, higher = more events",
         type: "number",
         default: 5
+      })
+      .option("startRange", {
+        alias: "range",
+        desc: "The range in which games will start, higher = less frequent",
+        type: "number",
+        default: 500
       })
       .example(
         "$0 simulate",

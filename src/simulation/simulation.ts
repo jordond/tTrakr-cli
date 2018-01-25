@@ -1,5 +1,16 @@
-import { DB_PATH_PLAYERS, DB_PATH_TEAMS, getOnce } from "../firebase/database";
+import {
+  DB_PATH_GAMES,
+  DB_PATH_PLAYERS,
+  DB_PATH_SIMULATION,
+  DB_PATH_TEAMS,
+  getOnce,
+  remove,
+  set
+} from "../firebase/database";
 import { ISportsFeedPlayer, ISportsFeedTeam } from "../sportsfeed/ISportsFeed";
+import { deNormalizeSportsFeed } from "../sportsfeed/nhlTeams";
+import { uuid } from "../utils/misc";
+import { buildGames, ISimGame, normalizeGames } from "./game";
 import { ISimulation } from "./ISimulation";
 
 export interface IDBTeams {
@@ -13,35 +24,66 @@ export interface IDBPlayers {
 }
 
 export class Simulation {
-  public static async build(settings: ISimulation, fetchData = true) {
-    const instance = new Simulation(settings);
-    if (fetchData) {
-      await instance.fetchData();
+  public static async build(settings: ISimulation, doInit = true) {
+    const instance = new Simulation({
+      ...settings,
+      started: false,
+      id: uuid()
+    });
+    if (doInit) {
+      await instance.init();
     }
     return instance;
   }
 
-  public teams: IDBTeams;
-  public players: IDBPlayers;
-
-  // TODO use settings
-  // tslint:disable-next-line
-  private settings: ISimulation;
+  private _teams: ISportsFeedTeam[];
+  private _games: ISimGame[];
+  private _settings: ISimulation;
+  private _isInit: boolean;
 
   constructor(settings: ISimulation) {
-    this.settings = settings;
+    this._settings = settings;
   }
 
-  public fetchData() {
-    return Promise.all([this.getTeams(), this.getPlayers()]);
+  public async init() {
+    if (!this._isInit) {
+      await set(DB_PATH_SIMULATION, this._settings);
+
+      await this.fetchTeamsAndPlayers();
+      await this.createGames();
+
+      this._isInit = true;
+    }
   }
 
-  private async getTeams() {
-    this.teams = await getOnce(DB_PATH_TEAMS);
+  public get settings() {
+    return this._settings;
   }
 
-  private async getPlayers() {
-    this.players = await getOnce(DB_PATH_PLAYERS);
+  public get teams() {
+    return this._teams || [];
+  }
+
+  public async stop() {
+    await remove(DB_PATH_SIMULATION);
+    await remove(`/${this.settings.id}`);
+  }
+
+  private async fetchTeamsAndPlayers() {
+    const results = await Promise.all([
+      getOnce(DB_PATH_TEAMS) as Promise<IDBTeams>,
+      getOnce(DB_PATH_PLAYERS) as Promise<IDBPlayers>
+    ]);
+
+    this._teams = deNormalizeSportsFeed({
+      teams: results[0],
+      players: results[1]
+    });
+  }
+
+  private async createGames() {
+    this._games = buildGames(this._teams, this.settings);
+    await set(`/${this.settings.id}`, normalizeGames(this._games));
   }
 }
 

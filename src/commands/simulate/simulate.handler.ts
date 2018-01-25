@@ -1,6 +1,8 @@
 import c from "chalk";
 
+import { clearInterval } from "timers";
 import { verifyConfig } from "../../index";
+import { exit } from "../../middleware";
 import { Simulation } from "../../simulation/simulation";
 import { simMinuteToRealMillis } from "../../simulation/time";
 import Logger from "../../utils/logger";
@@ -14,6 +16,7 @@ export default async function({
   factor = 0,
   chance,
   maxGames,
+  startRange,
   ...argv
 }: ICommandOptions) {
   const log = new Logger(TAG);
@@ -29,11 +32,42 @@ export default async function({
     ) / 1000) as any}} {green real-time} seconds`
   );
 
-  const simulation = await Simulation.build({ factor, chance, maxGames });
-  log.info(c`fetched {blue ${length(simulation.teams) as any}} teams`);
+  // Init simulation
+  const simulation = await Simulation.build({
+    factor,
+    chance,
+    maxGames,
+    startRange
+  });
+  const players = flatten(simulation.teams.map(x => x.players)).length;
 
-  const players = Object.values(simulation.players).map(x => Object.values(x));
-  log.info(c`fetched {cyan ${flatten(players).length as any}} players`);
+  log
+    .debug(c`using {cyan settings}`, simulation.settings)
+    .info(c`found {blue ${length(simulation.teams) as any}} teams`)
+    .info(c`found {cyan ${players as any}} players`);
 
-  return c`{green todo}`;
+  // Build the games
+  // Team VS Team
+  // use max limit => -1 === unlimited
+
+  // Start the simulation
+  // Check if game needs to start
+  // start game
+
+  // All games are finished
+  // DEFAULT -> restart simulation, with different games
+  // Stop completely
+
+  // Set listeners for the database events
+  // simulation started
+  // game started
+  // new period
+  // new goal
+  // new penalty
+  // game finished
+  // all games finished
+  setTimeout(() => {
+    simulation.stop();
+    exit();
+  }, 10000);
 }

@@ -1,5 +1,7 @@
 import Ajv from "ajv";
 
+import { IDBPlayers, IDBTeams } from "../simulation/simulation";
+import { flatten } from "../utils/misc";
 import { ISportsFeedPlayer, ISportsFeedTeam } from "./ISportsFeed";
 import schema from "./nhlTeamsSchema";
 
@@ -85,6 +87,19 @@ export function normalizeSportsFeed(data: ISportsFeedTeam[]) {
     },
     { teams: [], players: [] }
   );
+}
+
+export function deNormalizeSportsFeed({
+  teams,
+  players
+}: {
+  teams: IDBTeams;
+  players: IDBPlayers;
+}) {
+  return Object.values(teams).map(team => ({
+    ...team,
+    players: Object.values(players[team.abbreviation] || {})
+  }));
 }
 
 function createPlayerKey({ firstName, lastName }: ISportsFeedPlayer) {

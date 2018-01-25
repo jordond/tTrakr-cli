@@ -3,6 +3,7 @@ import { ServiceAccount } from "firebase-admin";
 
 import { verifyConfig } from "../../";
 import { validateAuth, validateSchema } from "../../firebase/credentials";
+import { exit } from "../../middleware";
 import { validateSportsFeedCredentials } from "../../sportsfeed";
 import Logger from "../../utils/logger";
 
@@ -47,7 +48,8 @@ export default async function({ config = {} }: ICommandOptions) {
 
   // Make sure all checks passed
   if ([spValid, fbValid].every(x => x)) {
-    return c`{magenta VALID!}  you have {bold {blue FULL}} access {bold ;)}`;
+    log.info(c`{magenta VALID!}  you have {bold {blue FULL}} access {bold ;)}`);
+    return exit();
   }
 
   throw new Error(

@@ -13,7 +13,13 @@
     "object-literal-sort-keys": false,
     "radix": false,
     "strict-boolean-expressions": false,
-    "no-unused-expression": [true, "allow-fast-null-checks"]
+    "no-unused-expression": [true, "allow-fast-null-checks"],
+    "variable-name": [
+      true,
+      "ban-keywords",
+      "check-format",
+      "allow-leading-underscore"
+    ]
   },
   "excludes": ["node_modules", "./src/polyfills"],
   "cliOptions": {

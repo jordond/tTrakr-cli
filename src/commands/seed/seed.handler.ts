@@ -63,5 +63,6 @@ export default async function({ config = {}, ...argv }: ICommandOptions) {
     return exit(1, error);
   }
 
-  return c`{green looks} {cyan like} {red we} {magenta did} {blue it!}`;
+  log.info(c`{green looks} {cyan like} {red we} {magenta did} {blue it!}`);
+  exit();
 }
