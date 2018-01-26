@@ -20,9 +20,9 @@ const simulate: CommandModule = {
     return yargs
       .option("factor", {
         alias: ["speed", "s", "speedFactor"],
-        desc: "Set the speed scale factor",
+        desc: "Set the speed scale factor, 1 is real-time",
         type: "number",
-        default: 0
+        default: 1
       })
       .option("maxGames", {
         alias: ["max", "m"],

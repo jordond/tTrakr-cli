@@ -13,7 +13,7 @@ const TAG = c`{yellow Sim}`;
 
 export default async function({
   config = {},
-  factor = 0,
+  factor = 1,
   chance,
   maxGames,
   startRange,
@@ -23,17 +23,21 @@ export default async function({
 
   verifyConfig(config);
 
-  if (factor !== 0) {
-    log.debug(c`using {bold speed} factor {cyan ${factor as any}}`);
-  }
+  const useFactor = factor < 1 ? 1 : factor;
+  log.debug(c`using {bold speed} factor {cyan ${useFactor as any}}`);
   log.info(
-    c`1 {green sim-Time} minute is equal to {blue ${(simMinuteToRealMillis(
-      factor
-    ) / 1000) as any}} {green real-time} seconds`
+    c`1 {green sim-Time} minute is equal to {blue ${(
+      simMinuteToRealMillis(useFactor) / 1000
+    ).toFixed(2)}} {green real-time} seconds`
   );
 
+  if (useFactor > 30) {
+    log.warning("a factor of 30 or higher is not recommended");
+    log.warning("the game may be sped up too much");
+  }
+
   // Init simulation
-  const settings = { factor, chance, maxGames, startRange };
+  const settings = { chance, maxGames, startRange, factor: useFactor };
   const simulation = await Simulation.build(settings);
   const players = flatten(simulation.teams.map(x => x.players)).length;
 
