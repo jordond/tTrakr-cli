@@ -51,10 +51,12 @@ export class Looper {
 
     if (this._minutes % 10 === 0) {
       this._log.info(c`{grey ${this.buildLogPrefix()}- Time Update}`);
-      this._log.debug(
-        c`there are {green ${this._finishedGames
-          .length as any}} finished {cyan games}`
-      );
+      if (this._finishedGames && this._finishedGames.length) {
+        this._log.debug(
+          c`there are {green ${this._finishedGames
+            .length as any}} finished {cyan games}`
+        );
+      }
     }
 
     const activeGames = this._games.filter(this.processGame.bind(this));

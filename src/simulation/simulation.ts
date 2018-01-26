@@ -42,6 +42,7 @@ export class Simulation {
   private _games: ISimGame[];
   private _settings: ISimulation;
   private _isInit: boolean;
+  private _wasStopped: boolean;
   private _looper: Looper;
   private _callback: ISimulationCallback;
 
@@ -74,6 +75,7 @@ export class Simulation {
 
   public start(callback: ISimulationCallback) {
     if (!this._looper || !this._looper.active) {
+      this._wasStopped = false;
       new Promise(async (resolve, reject) => {
         this._settings.started = true;
         this._settings.start = new Date();
@@ -82,7 +84,7 @@ export class Simulation {
         this._looper.start(this._settings, this._games);
         await update(DB_PATH_SIMULATION, this._settings);
       })
-        .then(callback)
+        .then((value: any) => !this._wasStopped && callback(value))
         .catch(err => {
           throw new Error(err);
         });
@@ -100,6 +102,7 @@ export class Simulation {
     if (this._looper && this._looper.active) {
       this._looper.destroy();
     }
+    this._wasStopped = true;
     await remove(DB_PATH_SIMULATION);
     await remove(DB_PATH_GAMES);
   }
