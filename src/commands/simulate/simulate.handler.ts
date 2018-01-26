@@ -2,7 +2,7 @@ import c from "chalk";
 
 import { verifyConfig } from "../../index";
 import { exit } from "../../middleware";
-import { ISimGame } from "../../simulation/game";
+import { ISimGame, sortByDate } from "../../simulation/game";
 import { Simulation } from "../../simulation/simulation";
 import { simMinuteToRealMillis } from "../../simulation/time";
 import Logger from "../../utils/logger";
@@ -47,27 +47,32 @@ export default async function({
   displayCreatedGames(simulation.games);
 
   log.info(c`{green starting} the {cyan simulation}`);
-  simulation.start(async () => {
-    log.info("Simulation ended");
-    log.info(c`auto-{cyan restarting} the simulation!`);
-    await simulation.restart();
-    displayCreatedGames(simulation.games);
+  try {
+    simulation.start(async () => {
+      log.info("Simulation ended");
+      log.info(c`auto-{cyan restarting} the simulation!`);
+      await simulation.restart();
+      displayCreatedGames(simulation.games);
 
-    // TODO check cli flag for auto-restart
-    // OR restart count.  If not, then stop it here.
-  });
+      // TODO check cli flag for auto-restart
+      // OR restart count.  If not, then stop it here.
+    });
 
-  // TODO change this, it needs to just check for keypress
-  log.info(c`press {bold {blue s}} to {red stop}`);
-  await prompt({
-    name: "command",
-    message: "enter command:",
-    type: "input",
-    validate: input => input.toLowerCase() === "s"
-  });
+    // TODO change this, it needs to just check for keypress
+    log.info(c`press {bold {blue s}} to {red stop}`);
+    await prompt({
+      name: "command",
+      message: "enter command:",
+      type: "input",
+      validate: input => input.toLowerCase() === "s"
+    });
 
-  log.info(c`stopping the {cyan simulation}!`);
-  await simulation.stop();
+    log.info(c`stopping the {cyan simulation}!`);
+    await simulation.stop();
+  } catch (error) {
+    log.error("Simulation threw an error!");
+    throw error;
+  }
 
   exit();
 
@@ -93,8 +98,14 @@ function displayCreatedGames(games: ISimGame[]) {
   log.info(c`created {green ${games.length as any}} games`);
   if (Logger.verbose) {
     log.debug(c`List of games: [{cyan Home}] - [{magenta Away}]`);
-    games.forEach(({ home, away }) =>
-      log.debug(c`[{cyan ${home.name}}] VS [{magenta ${away.name}}]`)
-    );
+    games
+      .sort(sortByDate)
+      .forEach(({ home, away, startTime }) =>
+        log.debug(
+          c`[{bold {green ${startTime.toLocaleTimeString()}}}][{cyan ${
+            home.abbreviation
+          }: ${home.name}}] VS [{magenta ${away.abbreviation}: ${away.name}}]`
+        )
+      );
   }
 }

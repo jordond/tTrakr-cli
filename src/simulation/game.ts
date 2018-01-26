@@ -1,4 +1,6 @@
+import { addMinutes } from "date-fns";
 import { ISportsFeedTeam } from "../sportsfeed/ISportsFeed";
+import { createMidnightDate } from "../utils/date";
 import { shuffle } from "../utils/misc";
 import { ISimulation } from "./ISimulation";
 import { randomRangeInt } from "./rng";
@@ -8,6 +10,7 @@ export interface ISimGame {
   home: ISportsFeedTeam;
   away: ISportsFeedTeam;
   startInMinutes: number;
+  startTime: Date;
   details: ISimGameDetails;
 }
 
@@ -17,6 +20,7 @@ export interface IDBSimGame {
     home: string;
     away: string;
     startInMinutes: number;
+    startTime: Date;
     details: ISimGameDetails;
   };
 }
@@ -31,6 +35,7 @@ export interface ISimGameDetails {
     away: number;
   };
   nextEventInMinutes: number;
+  nextEventTime: Date;
 }
 
 export function buildGames(
@@ -58,11 +63,18 @@ export function buildGames(
   const games: ISimGame[] = [];
   for (let index = 0; index < numGamesToBuild; index += 1) {
     const pair = shuffle(teamsToUse.splice(0, 2));
+
+    const startInMinutes = randomRangeInt(5, settings.startRange || 500);
+    const startTime = addMinutes(createMidnightDate(), startInMinutes);
+    const nextEventInMinutes = randomRangeInt(0, settings.chance || 5);
+
     games.push({
+      startInMinutes,
+      startTime,
       home: pair[0],
       away: pair[1],
-      startInMinutes: randomRangeInt(5, settings.startRange || 500),
       details: {
+        nextEventInMinutes,
         active: false,
         finished: false,
         period: 1,
@@ -71,7 +83,7 @@ export function buildGames(
           home: 0,
           away: 0
         },
-        nextEventInMinutes: randomRangeInt(0, settings.chance || 5)
+        nextEventTime: addMinutes(startTime, nextEventInMinutes)
       }
     });
   }
@@ -92,4 +104,15 @@ export function normalizeGames(games: ISimGame[]): IDBSimGame {
       }
     };
   }, {});
+}
+
+export function sortByDate(lhs: ISimGame, rhs: ISimGame) {
+  if (lhs.startInMinutes > rhs.startInMinutes) {
+    return 1;
+  }
+
+  if (lhs.startInMinutes < rhs.startInMinutes) {
+    return -1;
+  }
+  return 0;
 }

@@ -75,9 +75,12 @@ export class Simulation {
   public start(callback: ISimulationCallback) {
     if (!this._looper || !this._looper.active) {
       new Promise(async (resolve, reject) => {
+        this._settings.started = true;
+        this._settings.start = new Date();
+
         this._looper = new Looper(resolve);
         this._looper.start(this._settings, this._games);
-        await this.updateStartData();
+        await update(DB_PATH_SIMULATION, this._settings);
       })
         .then(callback)
         .catch(err => {
@@ -116,11 +119,6 @@ export class Simulation {
   private async createGames() {
     this._games = buildGames(this._teams, this.settings);
     await set(DB_PATH_GAMES, normalizeGames(this._games));
-  }
-
-  private async updateStartData() {
-    const data: ISimulation = { started: true, start: new Date() };
-    await update(DB_PATH_SIMULATION, data);
   }
 }
 

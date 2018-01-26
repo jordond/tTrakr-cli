@@ -1,7 +1,6 @@
 import Ajv from "ajv";
 
 import { IDBPlayers, IDBTeams } from "../simulation/simulation";
-import { flatten } from "../utils/misc";
 import { ISportsFeedPlayer, ISportsFeedTeam } from "./ISportsFeed";
 import schema from "./nhlTeamsSchema";
 
