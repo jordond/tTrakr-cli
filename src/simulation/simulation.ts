@@ -12,7 +12,7 @@ import { ISportsFeedPlayer, ISportsFeedTeam } from "../sportsfeed/ISportsFeed";
 import { deNormalizeSportsFeed } from "../sportsfeed/nhlTeams";
 import { buildGames, ISimGame, normalizeGames } from "./game";
 import { ISimulation } from "./ISimulation";
-import { Loop } from "./loop";
+import { Looper } from "./looper";
 
 export interface IDBTeams {
   [abbrev: string]: ISportsFeedTeam;
@@ -42,7 +42,7 @@ export class Simulation {
   private _games: ISimGame[];
   private _settings: ISimulation;
   private _isInit: boolean;
-  private _loop: Loop;
+  private _looper: Looper;
   private _callback: ISimulationCallback;
 
   constructor(settings: ISimulation) {
@@ -73,10 +73,10 @@ export class Simulation {
   }
 
   public start(callback: ISimulationCallback) {
-    if (!this._loop || !this._loop.active) {
+    if (!this._looper || !this._looper.active) {
       new Promise(async (resolve, reject) => {
-        this._loop = new Loop(resolve);
-        this._loop.start(this._settings, this._games);
+        this._looper = new Looper(resolve);
+        this._looper.start(this._settings, this._games);
         await this.updateStartData();
       })
         .then(callback)
@@ -94,8 +94,8 @@ export class Simulation {
   }
 
   public async stop() {
-    if (this._loop && this._loop.active) {
-      this._loop.destroy();
+    if (this._looper && this._looper.active) {
+      this._looper.destroy();
     }
     await remove(DB_PATH_SIMULATION);
     await remove(DB_PATH_GAMES);
