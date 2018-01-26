@@ -1,10 +1,8 @@
 import c from "chalk";
 
-import { addMinutes } from "date-fns";
 import { Logger } from "../utils/logger";
 import { ISimGame } from "./game";
 import { ISimulation } from "./ISimulation";
-import { randomRangeInt } from "./rng";
 import { getElapsedSimTime, simMinuteToRealMillis } from "./time";
 
 export const TAG = c`{green Sim}`;
@@ -19,7 +17,7 @@ export class Looper {
   private _settings: ISimulation;
   private _games: ISimGame[];
   private _finishedGames: ISimGame[];
-  private _minutes: number = 0;
+  private _minutesElapsed: number = 0;
 
   constructor(resolve: (value: any) => void) {
     this._resolve = resolve;
@@ -46,10 +44,9 @@ export class Looper {
   }
 
   private async loop() {
-    // Update the time keeper
-    this._minutes += 1;
+    this._minutesElapsed += 1;
 
-    if (this._minutes % 10 === 0) {
+    if (this._minutesElapsed % 10 === 0) {
       this._log.info(c`{grey ${this.buildLogPrefix()}- Time Update}`);
       if (this._finishedGames && this._finishedGames.length) {
         this._log.debug(
@@ -78,20 +75,34 @@ export class Looper {
       this.buildLogPrefix.bind(this)
     );
 
-    if (!details.active && this._minutes >= startInMinutes) {
+    // Start the game
+    if (!details.active && this._minutesElapsed >= startInMinutes) {
       details.active = true;
 
-      log.info("");
       log.info(c`game is {green Starting}!`);
-
-      details.nextEventTime = addMinutes(
-        this.calculateSimTime(),
-        randomRangeInt(0, this._settings.chance as number)
-      );
       log.info(
         c`next {yellow event} at {grey [{blue ${details.nextEventTime.toLocaleTimeString()}}]}`
       );
     }
+
+    if (!details.active) {
+      return true;
+    }
+
+    // Game is active
+
+    // Compare details.periodEnd vs currentSimTime
+
+    // If period is over
+    // If last period, end game figure out who won
+
+    // Increment the period, set new periodEnd time 20 mins
+
+    // Check if an event needs to happen
+    // Choose whether its a goal or penalty
+    // Decide who scored for which team, and any assists
+
+    // Update FIREBASE with the changed data
 
     return true;
   }
