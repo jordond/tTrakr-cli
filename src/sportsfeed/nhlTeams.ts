@@ -104,3 +104,7 @@ export function deNormalizeSportsFeed({
 export function createPlayerKey({ firstName, lastName }: ISportsFeedPlayer) {
   return `${firstName.charAt(0)}${lastName}`.toLowerCase();
 }
+
+export function createTeamKey(home: ISportsFeedTeam, away: ISportsFeedTeam) {
+  return `${home.abbreviation}_${away.abbreviation}`;
+}

@@ -1,5 +1,6 @@
 import { addMinutes } from "date-fns";
 import { ISportsFeedTeam } from "../sportsfeed/ISportsFeed";
+import { createTeamKey } from "../sportsfeed/nhlTeams";
 import { createMidnightDate } from "../utils/date";
 import { shuffle } from "../utils/misc";
 import { ISimulation } from "./ISimulation";
@@ -106,18 +107,21 @@ export function buildGames(
   return games;
 }
 
+export function normalizeGame(game: ISimGame) {
+  const { home, away, ...rest } = game;
+  return {
+    [createTeamKey(home, away)]: {
+      home: home.abbreviation,
+      away: away.abbreviation,
+      ...rest
+    }
+  };
+}
+
 export function normalizeGames(games: ISimGame[]): IDBSimGame {
   return games.reduce((prev, curr: ISimGame) => {
-    const { home, away, ...game } = curr;
-    const key = `${home.abbreviation}_${away.abbreviation}`;
-    return {
-      ...prev,
-      [key]: {
-        home: home.abbreviation,
-        away: away.abbreviation,
-        ...game
-      }
-    };
+    const normalizedCurr = normalizeGame(curr);
+    return { ...prev, ...normalizedCurr };
   }, {});
 }
 

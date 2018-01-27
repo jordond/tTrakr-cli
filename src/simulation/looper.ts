@@ -2,12 +2,14 @@ import c from "chalk";
 import { addMinutes } from "date-fns";
 import { sample, sampleSize } from "lodash";
 
+import { DB_PATH_GAMES, update } from "../firebase/database";
 import { ISportsFeedPlayer, ISportsFeedTeam } from "../sportsfeed/ISportsFeed";
 import { createPlayerKey } from "../sportsfeed/nhlTeams";
 import { Logger } from "../utils/logger";
 import {
   ISimGame,
   ISimGameGoal,
+  normalizeGame,
   NUMBER_MIN_IN_PERIOD,
   NUMBER_OF_PERIODS
 } from "./game";
@@ -117,12 +119,19 @@ export class Looper {
     if (this.isPast(details.periodEnd)) {
       if (details.period === NUMBER_OF_PERIODS) {
         const { home: hScore, away: aScore } = details.score;
+        const calcPenalty = (abbrev: string) =>
+          details.penalties.filter(x => x.team === abbrev).length as any;
+
         log.i(
           c`game is {bold {red over}}! score: {cyan ${
             home.abbreviation
-          }}:{cyan ${hScore as any}} -- {magenta ${
+          }}: {grey [{green ${hScore as any}}/{red ${calcPenalty(
+            home.abbreviation
+          )}}]} -- {magenta ${
             away.abbreviation
-          }}:{magenta ${aScore as any}}`
+          }}: {grey [{green ${aScore as any}}/{red ${calcPenalty(
+            away.abbreviation
+          )}}]}`
         );
 
         details.finished = true;
@@ -153,10 +162,10 @@ export class Looper {
         randomMax((this._settings.chance as number) + 3)
       );
       details.nextEventTime = nextEvent;
-      log.i(c`next event at ${displayTime(nextEvent)}`);
+      log.debug(c`next event at ${displayTime(nextEvent)}`);
 
       const { abbreviation: team, players } = coinToss() ? home : away;
-      const event = randomRangeInt(0, 3);
+      const event = randomRangeInt(0, 4);
       if (event === 1) {
         // Is a goal
         const inclPlayers = sampleSize(players, randomRangeInt(1, 4)).map(
@@ -191,6 +200,8 @@ export class Looper {
     // Update FIREBASE with the changed data
     if (hasUpdate) {
       log.debug(c`{green update} is required!`);
+      const data = normalizeGame({ home, away, startTime, details, ...rest });
+      update(DB_PATH_GAMES, data);
     }
 
     return !details.finished;
