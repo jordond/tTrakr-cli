@@ -8,6 +8,7 @@ declare global {
     maxGames?: number;
     chance?: number;
     startRange?: number;
+    restart?: boolean;
   }
 }
 
@@ -20,9 +21,9 @@ const simulate: CommandModule = {
     return yargs
       .option("factor", {
         alias: ["speed", "s", "speedFactor"],
-        desc: "Set the speed scale factor",
+        desc: "Set the speed scale factor, 1 is real-time",
         type: "number",
-        default: 0
+        default: 1
       })
       .option("maxGames", {
         alias: ["max", "m"],
@@ -32,7 +33,7 @@ const simulate: CommandModule = {
       })
       .option("chance", {
         alias: "c",
-        desc: "The likelyhood of events happening, higher = more events",
+        desc: "The likelyhood of events happening, lower = more events",
         type: "number",
         default: 5
       })
@@ -42,9 +43,18 @@ const simulate: CommandModule = {
         type: "number",
         default: 500
       })
+      .option("restart", {
+        desc: "Auto restart simulation after all games are finished",
+        type: "boolean",
+        default: true
+      })
       .example(
         "$0 simulate",
         "Starts the simulation of hockey games, with regular time"
+      )
+      .example(
+        "$0 simulate --no-restart",
+        "Only runs one simulation, instead of continuing after all games are done"
       )
       .example(
         "$0 simulate --speed 30",

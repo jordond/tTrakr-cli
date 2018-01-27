@@ -12,7 +12,7 @@ import { ISportsFeedPlayer, ISportsFeedTeam } from "../sportsfeed/ISportsFeed";
 import { deNormalizeSportsFeed } from "../sportsfeed/nhlTeams";
 import { buildGames, ISimGame, normalizeGames } from "./game";
 import { ISimulation } from "./ISimulation";
-import { Loop } from "./loop";
+import { Looper } from "./looper";
 
 export interface IDBTeams {
   [abbrev: string]: ISportsFeedTeam;
@@ -42,7 +42,8 @@ export class Simulation {
   private _games: ISimGame[];
   private _settings: ISimulation;
   private _isInit: boolean;
-  private _loop: Loop;
+  private _wasStopped: boolean;
+  private _looper: Looper;
   private _callback: ISimulationCallback;
 
   constructor(settings: ISimulation) {
@@ -73,13 +74,18 @@ export class Simulation {
   }
 
   public start(callback: ISimulationCallback) {
-    if (!this._loop || !this._loop.active) {
+    if (!this._looper || !this._looper.active) {
+      this._callback = callback;
+      this._wasStopped = false;
       new Promise(async (resolve, reject) => {
-        this._loop = new Loop(resolve);
-        this._loop.start(this._settings, this._games);
-        await this.updateStartData();
+        this._settings.started = true;
+        this._settings.start = new Date();
+
+        this._looper = new Looper(resolve);
+        this._looper.start(this._settings, this._games);
+        await update(DB_PATH_SIMULATION, this._settings);
       })
-        .then(callback)
+        .then((value: any) => !this._wasStopped && callback(value))
         .catch(err => {
           throw new Error(err);
         });
@@ -94,9 +100,10 @@ export class Simulation {
   }
 
   public async stop() {
-    if (this._loop && this._loop.active) {
-      this._loop.destroy();
+    if (this._looper && this._looper.active) {
+      this._looper.destroy();
     }
+    this._wasStopped = true;
     await remove(DB_PATH_SIMULATION);
     await remove(DB_PATH_GAMES);
   }
@@ -116,11 +123,6 @@ export class Simulation {
   private async createGames() {
     this._games = buildGames(this._teams, this.settings);
     await set(DB_PATH_GAMES, normalizeGames(this._games));
-  }
-
-  private async updateStartData() {
-    const data: ISimulation = { started: true, start: new Date() };
-    await update(DB_PATH_SIMULATION, data);
   }
 }
 

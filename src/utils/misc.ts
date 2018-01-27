@@ -10,6 +10,10 @@ import * as filesize from "filesize";
  */
 export function noop() {} /* tslint:disable-line */
 
+export function noopStr(val?: any): string {
+  return "";
+}
+
 export function delay(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }

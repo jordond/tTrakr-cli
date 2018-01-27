@@ -1,6 +1,6 @@
 import c from "chalk";
 
-import { prettyObj, timestamp } from "./misc";
+import { noopStr, prettyObj, timestamp } from "./misc";
 
 // tslint:disable:function-name
 
@@ -18,9 +18,11 @@ export class Logger {
   public static silent: boolean = false;
 
   public tag: string;
+  public prefix: () => string;
 
-  constructor(tag: string = "CLI") {
+  constructor(tag: string = "CLI", prefix = noopStr) {
     this.tag = tag;
+    this.prefix = prefix;
   }
 
   public i(msg: string, data?: any): Logger {
@@ -51,14 +53,14 @@ export class Logger {
     return this.out(LEVEL_ERROR, red(msg), data);
   }
 
-  public prefix(level: string = LEVEL_INFO): string {
-    return c`{grey [${timestamp()}][${level}][${this.tag}]}`;
+  public getPrefix(level: string = LEVEL_INFO): string {
+    return c`{grey [${timestamp()}][${level}][${this.tag}]} ${this.prefix()}`;
   }
 
   private out(level: string, msg: string, data?: any): Logger {
     if (this.canOutput(level)) {
       console.log(
-        c`${this.prefix(level)} ${msg}${
+        c`${this.getPrefix(level)}${msg}${
           data ? "\n" + (data instanceof Error ? data : prettyObj(data)) : ""
         }`
       );

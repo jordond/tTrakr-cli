@@ -1,13 +1,19 @@
+import { addMinutes } from "date-fns";
 import { ISportsFeedTeam } from "../sportsfeed/ISportsFeed";
+import { createTeamKey } from "../sportsfeed/nhlTeams";
+import { createMidnightDate } from "../utils/date";
 import { shuffle } from "../utils/misc";
 import { ISimulation } from "./ISimulation";
 import { randomRangeInt } from "./rng";
+
+export const NUMBER_OF_PERIODS = 3;
+export const NUMBER_MIN_IN_PERIOD = 20;
 
 // Working interface
 export interface ISimGame {
   home: ISportsFeedTeam;
   away: ISportsFeedTeam;
-  startInMinutes: number;
+  startTime: Date;
   details: ISimGameDetails;
 }
 
@@ -16,21 +22,35 @@ export interface IDBSimGame {
   [homeaway: string]: {
     home: string;
     away: string;
-    startInMinutes: number;
+    startTime: Date;
     details: ISimGameDetails;
   };
+}
+
+export interface ISimGameGoal {
+  team: string;
+  player: string;
+  assist: string[];
+}
+
+export interface ISimGamePenalty {
+  team: string;
+  player: string;
 }
 
 export interface ISimGameDetails {
   active: boolean;
   period: number;
-  periodTime: number;
+  periodEnd: Date;
   finished: boolean;
+  goals: ISimGameGoal[];
+  penalties: ISimGamePenalty[];
   score: {
     home: number;
     away: number;
   };
-  nextEventInMinutes: number;
+  nextEventTime: Date;
+  winner: string;
 }
 
 export function buildGames(
@@ -58,20 +78,28 @@ export function buildGames(
   const games: ISimGame[] = [];
   for (let index = 0; index < numGamesToBuild; index += 1) {
     const pair = shuffle(teamsToUse.splice(0, 2));
+
+    const startInMinutes = randomRangeInt(5, settings.startRange || 500);
+    const startTime = addMinutes(createMidnightDate(), startInMinutes);
+    const nextEventInMinutes = randomRangeInt(0, settings.chance || 5);
+
     games.push({
+      startTime,
       home: pair[0],
       away: pair[1],
-      startInMinutes: randomRangeInt(5, settings.startRange || 500),
       details: {
         active: false,
         finished: false,
         period: 1,
-        periodTime: 20,
+        periodEnd: addMinutes(startTime, NUMBER_MIN_IN_PERIOD),
+        goals: [],
+        penalties: [],
         score: {
           home: 0,
           away: 0
         },
-        nextEventInMinutes: randomRangeInt(0, settings.chance || 5)
+        nextEventTime: addMinutes(startTime, nextEventInMinutes),
+        winner: ""
       }
     });
   }
@@ -79,17 +107,31 @@ export function buildGames(
   return games;
 }
 
+export function normalizeGame(game: ISimGame) {
+  const { home, away, ...rest } = game;
+  return {
+    [createTeamKey(home, away)]: {
+      home: home.abbreviation,
+      away: away.abbreviation,
+      ...rest
+    }
+  };
+}
+
 export function normalizeGames(games: ISimGame[]): IDBSimGame {
   return games.reduce((prev, curr: ISimGame) => {
-    const { home, away, ...game } = curr;
-    const key = `${home.abbreviation}_${away.abbreviation}`;
-    return {
-      ...prev,
-      [key]: {
-        home: home.abbreviation,
-        away: away.abbreviation,
-        ...game
-      }
-    };
+    const normalizedCurr = normalizeGame(curr);
+    return { ...prev, ...normalizedCurr };
   }, {});
+}
+
+export function sortByDate(lhs: ISimGame, rhs: ISimGame) {
+  if (lhs.startTime > rhs.startTime) {
+    return 1;
+  }
+
+  if (lhs.startTime < rhs.startTime) {
+    return -1;
+  }
+  return 0;
 }

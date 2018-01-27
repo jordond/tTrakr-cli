@@ -1,7 +1,6 @@
 import Ajv from "ajv";
 
 import { IDBPlayers, IDBTeams } from "../simulation/simulation";
-import { flatten } from "../utils/misc";
 import { ISportsFeedPlayer, ISportsFeedTeam } from "./ISportsFeed";
 import schema from "./nhlTeamsSchema";
 
@@ -102,6 +101,10 @@ export function deNormalizeSportsFeed({
   }));
 }
 
-function createPlayerKey({ firstName, lastName }: ISportsFeedPlayer) {
+export function createPlayerKey({ firstName, lastName }: ISportsFeedPlayer) {
   return `${firstName.charAt(0)}${lastName}`.toLowerCase();
+}
+
+export function createTeamKey(home: ISportsFeedTeam, away: ISportsFeedTeam) {
+  return `${home.abbreviation}_${away.abbreviation}`;
 }

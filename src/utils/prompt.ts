@@ -10,7 +10,7 @@ export function prompt(
   level = LEVEL_INFO
 ): Promise<Answers> {
   const newQuestions = ensureArray(questions).map(question => ({
-    prefix: create(logTag).prefix(level),
+    prefix: create(logTag).getPrefix(level),
     message: " ", // Enables not passing a message property
     ...question
   }));
