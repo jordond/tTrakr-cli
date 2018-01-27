@@ -5,6 +5,9 @@ import { shuffle } from "../utils/misc";
 import { ISimulation } from "./ISimulation";
 import { randomRangeInt } from "./rng";
 
+export const NUMBER_OF_PERIODS = 3;
+export const NUMBER_MIN_IN_PERIOD = 20;
+
 // Working interface
 export interface ISimGame {
   home: ISportsFeedTeam;
@@ -28,7 +31,7 @@ export interface IDBSimGame {
 export interface ISimGameDetails {
   active: boolean;
   period: number;
-  periodTime: number;
+  periodEnd: Date;
   finished: boolean;
   score: {
     home: number;
@@ -36,6 +39,7 @@ export interface ISimGameDetails {
   };
   nextEventInMinutes: number;
   nextEventTime: Date;
+  winner: string;
 }
 
 export function buildGames(
@@ -78,12 +82,13 @@ export function buildGames(
         active: false,
         finished: false,
         period: 1,
-        periodTime: 20,
+        periodEnd: addMinutes(startTime, NUMBER_MIN_IN_PERIOD),
         score: {
           home: 0,
           away: 0
         },
-        nextEventTime: addMinutes(startTime, nextEventInMinutes)
+        nextEventTime: addMinutes(startTime, nextEventInMinutes),
+        winner: ""
       }
     });
   }

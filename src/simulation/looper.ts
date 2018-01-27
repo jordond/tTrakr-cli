@@ -1,7 +1,8 @@
 import c from "chalk";
+import { addMinutes } from "date-fns";
 
 import { Logger } from "../utils/logger";
-import { ISimGame } from "./game";
+import { ISimGame, NUMBER_MIN_IN_PERIOD, NUMBER_OF_PERIODS } from "./game";
 import { ISimulation } from "./ISimulation";
 import { getElapsedSimTime, simMinuteToRealMillis } from "./time";
 
@@ -16,7 +17,7 @@ export class Looper {
 
   private _settings: ISimulation;
   private _games: ISimGame[];
-  private _finishedGames: ISimGame[];
+  private _finishedGames: ISimGame[] = [];
   private _minutesElapsed: number = 0;
 
   constructor(resolve: (value: any) => void) {
@@ -56,18 +57,16 @@ export class Looper {
       }
     }
 
-    const activeGames = this._games.filter(this.processGame.bind(this));
+    this._games = this._games.filter(this.processGame.bind(this));
 
-    if (activeGames.length === 0) {
-      this._log.info(
-        c`Simulation ended, {magenta all} the games are {red finished}!`
-      );
+    if (this._games.length === 0) {
+      this._log.info(c`{magenta all} the games are {red finished}!`);
       this.destroy();
     }
   }
 
   private processGame(
-    { home, away, startInMinutes, details }: ISimGame,
+    { home, away, startTime, details, ...rest }: ISimGame,
     index: number
   ): boolean {
     const log = new Logger(
@@ -76,12 +75,11 @@ export class Looper {
     );
 
     // Start the game
-    if (!details.active && this._minutesElapsed >= startInMinutes) {
+    if (!details.active && !details.finished && this.isPast(startTime)) {
       details.active = true;
 
-      log.info(c`game is {green Starting}!`);
       log.info(
-        c`next {yellow event} at {grey [{blue ${details.nextEventTime.toLocaleTimeString()}}]}`
+        c`game is {green Starting}! {bold event} at {grey [{blue ${details.nextEventTime.toLocaleTimeString()}}]}`
       );
     }
 
@@ -91,12 +89,35 @@ export class Looper {
 
     // Game is active
 
-    // Compare details.periodEnd vs currentSimTime
+    // Handle the period ending, and game ending
+    if (this.isPast(details.periodEnd)) {
+      if (details.period === NUMBER_OF_PERIODS) {
+        const { home: hScore, away: aScore } = details.score;
+        log.i(
+          c`game is {bold {red over}}! score: {cyan ${
+            home.abbreviation
+          }}:{cyan ${hScore as any}} -- {magenta ${
+            away.abbreviation
+          }}:{magenta ${aScore as any}}`
+        );
 
-    // If period is over
-    // If last period, end game figure out who won
+        details.finished = true;
+        details.active = false;
+        details.winner =
+          hScore !== aScore
+            ? (hScore > aScore ? home : away).abbreviation
+            : "TIE";
+        log.info(c`the winner is {green ${details.winner}}!`);
 
-    // Increment the period, set new periodEnd time 20 mins
+        this._finishedGames.push({ home, away, startTime, details, ...rest });
+      } else {
+        details.period += 1;
+        details.periodEnd = addMinutes(
+          this.calcSimTime(),
+          NUMBER_MIN_IN_PERIOD
+        );
+      }
+    }
 
     // Check if an event needs to happen
     // Choose whether its a goal or penalty
@@ -104,15 +125,19 @@ export class Looper {
 
     // Update FIREBASE with the changed data
 
-    return true;
+    return !details.finished;
   }
 
-  private calculateSimTime(): Date {
+  private calcSimTime(): Date {
     const { factor, start } = this._settings;
     return getElapsedSimTime(factor, start as Date);
   }
 
   private buildLogPrefix() {
-    return c`{grey [{yellow ${this.calculateSimTime().toLocaleTimeString()}}]} `;
+    return c`{grey [{yellow ${this.calcSimTime().toLocaleTimeString()}}]} `;
+  }
+
+  private isPast(target: Date, current = this.calcSimTime()): boolean {
+    return target < current;
   }
 }

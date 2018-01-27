@@ -17,6 +17,7 @@ export default async function({
   chance,
   maxGames,
   startRange,
+  restart = true,
   ...argv
 }: ICommandOptions) {
   const log = new Logger(TAG);
@@ -54,12 +55,16 @@ export default async function({
   try {
     simulation.start(async () => {
       log.info("Simulation ended");
-      log.info(c`auto-{cyan restarting} the simulation!`);
-      await simulation.restart();
-      displayCreatedGames(simulation.games);
+      if (restart) {
+        log.info(c`auto-{cyan restarting} the simulation!`);
 
-      // TODO check cli flag for auto-restart
-      // OR restart count.  If not, then stop it here.
+        await simulation.restart();
+        displayCreatedGames(simulation.games);
+      } else {
+        log.info(c`{red auto-restart} is disabled, stopping all the fun!`);
+        await simulation.stop();
+        return exit();
+      }
     });
 
     // TODO change this, it needs to just check for keypress

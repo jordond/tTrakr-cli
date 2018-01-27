@@ -75,6 +75,7 @@ export class Simulation {
 
   public start(callback: ISimulationCallback) {
     if (!this._looper || !this._looper.active) {
+      this._callback = callback;
       this._wasStopped = false;
       new Promise(async (resolve, reject) => {
         this._settings.started = true;
