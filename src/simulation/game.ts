@@ -12,7 +12,6 @@ export const NUMBER_MIN_IN_PERIOD = 20;
 export interface ISimGame {
   home: ISportsFeedTeam;
   away: ISportsFeedTeam;
-  startInMinutes: number;
   startTime: Date;
   details: ISimGameDetails;
 }
@@ -22,10 +21,20 @@ export interface IDBSimGame {
   [homeaway: string]: {
     home: string;
     away: string;
-    startInMinutes: number;
     startTime: Date;
     details: ISimGameDetails;
   };
+}
+
+export interface ISimGameGoal {
+  team: string;
+  player: string;
+  assist: string[];
+}
+
+export interface ISimGamePenalty {
+  team: string;
+  player: string;
 }
 
 export interface ISimGameDetails {
@@ -33,11 +42,12 @@ export interface ISimGameDetails {
   period: number;
   periodEnd: Date;
   finished: boolean;
+  goals: ISimGameGoal[];
+  penalties: ISimGamePenalty[];
   score: {
     home: number;
     away: number;
   };
-  nextEventInMinutes: number;
   nextEventTime: Date;
   winner: string;
 }
@@ -73,16 +83,16 @@ export function buildGames(
     const nextEventInMinutes = randomRangeInt(0, settings.chance || 5);
 
     games.push({
-      startInMinutes,
       startTime,
       home: pair[0],
       away: pair[1],
       details: {
-        nextEventInMinutes,
         active: false,
         finished: false,
         period: 1,
         periodEnd: addMinutes(startTime, NUMBER_MIN_IN_PERIOD),
+        goals: [],
+        penalties: [],
         score: {
           home: 0,
           away: 0
@@ -112,11 +122,11 @@ export function normalizeGames(games: ISimGame[]): IDBSimGame {
 }
 
 export function sortByDate(lhs: ISimGame, rhs: ISimGame) {
-  if (lhs.startInMinutes > rhs.startInMinutes) {
+  if (lhs.startTime > rhs.startTime) {
     return 1;
   }
 
-  if (lhs.startInMinutes < rhs.startInMinutes) {
+  if (lhs.startTime < rhs.startTime) {
     return -1;
   }
   return 0;

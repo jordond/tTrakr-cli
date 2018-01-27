@@ -21,3 +21,7 @@ export function randomRangeInt(
     ) + min
   );
 }
+
+export function randomMax(max: number, inclusive = false) {
+  return randomRangeInt(0, max, inclusive);
+}

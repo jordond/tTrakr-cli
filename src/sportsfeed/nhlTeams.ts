@@ -101,6 +101,6 @@ export function deNormalizeSportsFeed({
   }));
 }
 
-function createPlayerKey({ firstName, lastName }: ISportsFeedPlayer) {
+export function createPlayerKey({ firstName, lastName }: ISportsFeedPlayer) {
   return `${firstName.charAt(0)}${lastName}`.toLowerCase();
 }

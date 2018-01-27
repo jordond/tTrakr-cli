@@ -1,9 +1,18 @@
 import c from "chalk";
 import { addMinutes } from "date-fns";
+import { sample, sampleSize } from "lodash";
 
+import { ISportsFeedPlayer, ISportsFeedTeam } from "../sportsfeed/ISportsFeed";
+import { createPlayerKey } from "../sportsfeed/nhlTeams";
 import { Logger } from "../utils/logger";
-import { ISimGame, NUMBER_MIN_IN_PERIOD, NUMBER_OF_PERIODS } from "./game";
+import {
+  ISimGame,
+  ISimGameGoal,
+  NUMBER_MIN_IN_PERIOD,
+  NUMBER_OF_PERIODS
+} from "./game";
 import { ISimulation } from "./ISimulation";
+import { coinToss, randomMax, randomRangeInt } from "./rng";
 import { getElapsedSimTime, simMinuteToRealMillis } from "./time";
 
 export const TAG = c`{green Sim}`;
@@ -47,7 +56,7 @@ export class Looper {
   private async loop() {
     this._minutesElapsed += 1;
 
-    if (this._minutesElapsed % 10 === 0) {
+    if (this._minutesElapsed % 10 === 0 || this._minutesElapsed === 1) {
       this._log.info(c`{grey ${this.buildLogPrefix()}- Time Update}`);
       if (this._finishedGames && this._finishedGames.length) {
         this._log.debug(
@@ -65,22 +74,37 @@ export class Looper {
     }
   }
 
+  private createTeamLog({
+    home,
+    away
+  }: {
+    home: ISportsFeedTeam;
+    away: ISportsFeedTeam;
+  }) {
+    return new Logger(
+      c`{cyan ${home.abbreviation}}|{magenta ${away.abbreviation}}`,
+      this.buildLogPrefix.bind(this)
+    );
+  }
+
   private processGame(
     { home, away, startTime, details, ...rest }: ISimGame,
     index: number
   ): boolean {
-    const log = new Logger(
-      c`{cyan ${home.abbreviation}}|{magenta ${away.abbreviation}}`,
-      this.buildLogPrefix.bind(this)
-    );
+    const log = this.createTeamLog({ home, away });
+    let hasUpdate: boolean = false;
 
     // Start the game
     if (!details.active && !details.finished && this.isPast(startTime)) {
       details.active = true;
 
       log.info(
-        c`game is {green Starting}! {bold event} at {grey [{blue ${details.nextEventTime.toLocaleTimeString()}}]}`
+        c`game is {green Starting}! {bold event} at ${displayTime(
+          details.nextEventTime
+        )}`
       );
+
+      hasUpdate = true;
     }
 
     if (!details.active) {
@@ -112,18 +136,62 @@ export class Looper {
         this._finishedGames.push({ home, away, startTime, details, ...rest });
       } else {
         details.period += 1;
-        details.periodEnd = addMinutes(
-          this.calcSimTime(),
-          NUMBER_MIN_IN_PERIOD
+        details.periodEnd = this.addMinsToTime(NUMBER_MIN_IN_PERIOD);
+        log.debug(
+          c`starting period {blue ${details.period as any}} and will end at ${displayTime(
+            details.periodEnd
+          )}`
         );
       }
+
+      hasUpdate = true;
     }
 
     // Check if an event needs to happen
-    // Choose whether its a goal or penalty
-    // Decide who scored for which team, and any assists
+    if (this.isPast(details.nextEventTime)) {
+      const nextEvent = this.addMinsToTime(
+        randomMax((this._settings.chance as number) + 3)
+      );
+      details.nextEventTime = nextEvent;
+      log.i(c`next event at ${displayTime(nextEvent)}`);
+
+      const { abbreviation: team, players } = coinToss() ? home : away;
+      const event = randomRangeInt(0, 3);
+      if (event === 1) {
+        // Is a goal
+        const inclPlayers = sampleSize(players, randomRangeInt(1, 4)).map(
+          createPlayerKey
+        );
+
+        const goal: ISimGameGoal = {
+          team,
+          player: inclPlayers.splice(0, 1)[0],
+          assist: inclPlayers
+        };
+        details.goals.push(goal);
+        details.score[team === home.abbreviation ? "home" : "away"] += 1;
+
+        log.i(c`GOAL: {blue ${team}} {green ${goal.player}} scored a goal`);
+        if (goal.assist.length) {
+          log.debug(
+            c`\t {magenta assist} from {green ${goal.assist.toString()}}`
+          );
+        }
+        hasUpdate = true;
+      } else if (event === 2) {
+        // Is a penalty
+        const player = createPlayerKey(sample(players) as ISportsFeedPlayer);
+        details.penalties.push({ team, player });
+
+        log.i(c`{blue ${team}} {red ${player}} recieved a {red penalty}`);
+        hasUpdate = true;
+      }
+    }
 
     // Update FIREBASE with the changed data
+    if (hasUpdate) {
+      log.debug(c`{green update} is required!`);
+    }
 
     return !details.finished;
   }
@@ -133,6 +201,10 @@ export class Looper {
     return getElapsedSimTime(factor, start as Date);
   }
 
+  private addMinsToTime(minutes: number) {
+    return addMinutes(this.calcSimTime(), minutes);
+  }
+
   private buildLogPrefix() {
     return c`{grey [{yellow ${this.calcSimTime().toLocaleTimeString()}}]} `;
   }
@@ -140,4 +212,8 @@ export class Looper {
   private isPast(target: Date, current = this.calcSimTime()): boolean {
     return target < current;
   }
+}
+
+function displayTime(time: Date): string {
+  return c`{grey [{blue ${time.toLocaleTimeString()}}]}`;
 }
